@@ -1,21 +1,19 @@
+// src/ForgotPassword.js
+
 import React from 'react';
 import { Container, TextField, Button, Typography, Box, Link } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 
-const Login = () => {
-    const navigate = useNavigate();
+const ForgotPassword = () => {
+  const navigate = useNavigate();
+  const handlePasswordReset = () => {
+    // Handle password reset logic here
+  };
 
-    const handleLogin = () => {
-        // Handle login logic here
-      };
-  
-    const handleRegister = () => {
-      navigate('/register');
-    };
-  
-    const handleForgotPassword = () => {
-      navigate('/forgot-password');
-    };
+  const handleLoginRedirect = () => {
+    // Navigate to login page
+    navigate('/login');
+  };
 
   return (
     <Container maxWidth="xs">
@@ -31,7 +29,7 @@ const Login = () => {
         }}
       >
         <Typography variant="h5" gutterBottom>
-          Login
+          Forgot Password
         </Typography>
         
         <TextField
@@ -41,15 +39,7 @@ const Login = () => {
           fullWidth
           label="Email"
           type="email"
-        />
-        
-        <TextField
-          variant="outlined"
-          margin="normal"
-          required
-          fullWidth
-          label="Password"
-          type="password"
+          helperText="Enter your email to receive password reset instructions."
         />
 
         <Button
@@ -57,17 +47,14 @@ const Login = () => {
           variant="contained"
           color="primary"
           sx={{ mt: 2 }}
-          onClick={handleLogin}
+          onClick={handlePasswordReset}
         >
-          Login
+          Send Reset Link
         </Button>
 
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2, width: '100%' }}>
-          <Link component="button" variant="body2" onClick={handleRegister}>
-            Register
-          </Link>
-          <Link component="button" variant="body2" onClick={handleForgotPassword}>
-            Forgot Password?
+        <Box sx={{ mt: 2 }}>
+          <Link component="button" variant="body2" onClick={handleLoginRedirect}>
+            Back to Login
           </Link>
         </Box>
       </Box>
@@ -75,4 +62,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default ForgotPassword;
