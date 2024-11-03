@@ -7,6 +7,7 @@ const Login = () => {
 
     const handleLogin = () => {
         // Handle login logic here
+        navigate('/dashboard');
       };
   
     const handleRegister = () => {
