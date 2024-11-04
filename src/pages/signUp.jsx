@@ -3,6 +3,8 @@
 import React from 'react';
 import { Container, TextField, Button, Typography, Box, Link } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import "./../styles/styles.css";
+import logo from "./../assets/logo.jpg"
 
 const Register = () => {
   const navigate = useNavigate();
@@ -16,19 +18,14 @@ const Register = () => {
   };
 
   return (
-    <Container maxWidth="xs">
-      <Box
-        sx={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          marginTop: 8,
-          padding: 3,
-          boxShadow: 3,
-          borderRadius: 2,
-        }}
-      >
-        <Typography variant="h5" gutterBottom>
+    <Container className="login-page">
+      <Box className="login-container">
+        <Box className="left-section">
+          <img src={logo} alt="Logo" className="logo-image" /> {/* Replace with actual image path */}
+        </Box>
+
+        <Box className="right-section">
+        <Typography  className="logo-text">
           Register
         </Typography>
 
@@ -63,17 +60,20 @@ const Register = () => {
           fullWidth
           variant="contained"
           color="primary"
-          sx={{ mt: 2 }}
+          className="login-button"
           onClick={handleRegister}
         >
           Register
         </Button>
 
-        <Box sx={{ mt: 2 }}>
-          <Link component="button" variant="body2" onClick={handleLoginRedirect}>
-            Already have an account? Login
+        
+        <Box className="link-section">
+        <Typography variant="body2">Have an account?</Typography>
+          <Link component="button" className="link"  onClick={handleLoginRedirect}>
+            Login
           </Link>
         </Box>
+      </Box>
       </Box>
     </Container>
   );

@@ -1,6 +1,8 @@
 import React from 'react';
 import { Container, TextField, Button, Typography, Box, Link } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import "./../styles/styles.css";
+import logo from "./../assets/logo.jpg"
 
 const Login = () => {
     const navigate = useNavigate();
@@ -19,57 +21,45 @@ const Login = () => {
     };
 
   return (
-    <Container maxWidth="xs">
-      <Box
-        sx={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          marginTop: 8,
-          padding: 3,
-          boxShadow: 3,
-          borderRadius: 2,
-        }}
-      >
-        <Typography variant="h5" gutterBottom>
-          Login
-        </Typography>
+    <Container className="login-page">
+      <Box className="login-container">
         
-        <TextField
-          variant="outlined"
-          margin="normal"
-          required
-          fullWidth
-          label="Email"
-          type="email"
-        />
+        {/* Left section for logo/image */}
+        <Box className="left-section">
+          <img src={logo} alt="Logo" className="logo-image" /> {/* Replace with actual image path */}
+        </Box>
         
-        <TextField
-          variant="outlined"
-          margin="normal"
-          required
-          fullWidth
-          label="Password"
-          type="password"
-        />
+        {/* Right section for login form */}
+        <Box className="right-section">
+          <Typography className="logo-text">Login</Typography>
 
-        <Button
-          fullWidth
-          variant="contained"
-          color="primary"
-          sx={{ mt: 2 }}
-          onClick={handleLogin}
-        >
-          Login
-        </Button>
+          <TextField
+            variant="outlined"
+            label="Phone number, username, or email"
+            fullWidth
+            required
+          />
 
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2, width: '100%' }}>
-          <Link component="button" variant="body2" onClick={handleRegister}>
-            Register
-          </Link>
-          <Link component="button" variant="body2" onClick={handleForgotPassword}>
-            Forgot Password?
-          </Link>
+          <TextField
+            variant="outlined"
+            label="Password"
+            type="password"
+            fullWidth
+            required
+          />
+
+          <Button variant="contained" className="login-button"   onClick={handleLogin}>
+            Log in
+          </Button>
+
+          <Box className="link-section">
+            <Typography variant="body2"  className="link" onClick={handleForgotPassword}>Forgot password?</Typography>
+          </Box>
+
+          <Box className="link-section">
+            <Typography variant="body2">Don't have an account?</Typography>
+            <Link component="button" className="link" onClick={handleRegister}>Sign up</Link>
+          </Box>
         </Box>
       </Box>
     </Container>

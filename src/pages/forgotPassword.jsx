@@ -3,6 +3,8 @@
 import React from 'react';
 import { Container, TextField, Button, Typography, Box, Link } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import "./../styles/styles.css";
+import logo from "./../assets/logo.jpg";
 
 const ForgotPassword = () => {
   const navigate = useNavigate();
@@ -16,19 +18,13 @@ const ForgotPassword = () => {
   };
 
   return (
-    <Container maxWidth="xs">
-      <Box
-        sx={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          marginTop: 8,
-          padding: 3,
-          boxShadow: 3,
-          borderRadius: 2,
-        }}
-      >
-        <Typography variant="h5" gutterBottom>
+    <Container className="login-page">
+      <Box className="login-container">
+        <Box className="left-section">
+          <img src={logo} alt="Logo" className="logo-image" /> {/* Replace with actual image path */}
+        </Box>
+        <Box className="right-section">
+        <Typography className="logo-text">
           Forgot Password
         </Typography>
         
@@ -46,17 +42,18 @@ const ForgotPassword = () => {
           fullWidth
           variant="contained"
           color="primary"
-          sx={{ mt: 2 }}
+          className="login-button"  
           onClick={handlePasswordReset}
         >
           Send Reset Link
         </Button>
 
-        <Box sx={{ mt: 2 }}>
-          <Link component="button" variant="body2" onClick={handleLoginRedirect}>
+        <Box className="link-section">
+          <Link component="button" className="link" onClick={handleLoginRedirect}>
             Back to Login
           </Link>
         </Box>
+      </Box>
       </Box>
     </Container>
   );
