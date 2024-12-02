@@ -5,7 +5,7 @@ import './App.css';
 import './../src/styles/styles.css';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Dashboard from './pages/Dashboard';
-import SemesterManagement from './pages/SemesterManagement'; // Import Semester Management
+import SemesterManagement from './components/SemesterManagement'; // Import Semester Management
 
 function App() {
   return (
