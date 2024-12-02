@@ -1,43 +1,50 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Container, TextField, Button, Typography, Box, Link } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import { login } from '../services/authService'; // Import the login function
 import "./../styles/styles.css";
-import logo from "./../assets/logo.jpg"
+import logo from "./../assets/logo.jpg";
 
 const Login = () => {
-    const navigate = useNavigate();
+  const navigate = useNavigate();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState(null);
 
-    const handleLogin = () => {
-        // Handle login logic here
-        navigate('/dashboard');
-      };
-  
-    const handleRegister = () => {
-      navigate('/register');
-    };
-  
-    const handleForgotPassword = () => {
-      navigate('/forgot-password');
-    };
+  const handleLogin = async () => {
+    try {
+      await login(email, password); // Call login function from authService.js
+      alert("Login successful!");
+      navigate('/dashboard'); // Redirect to dashboard on success
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  const handleRegister = () => {
+    navigate('/register');
+  };
+
+  const handleForgotPassword = () => {
+    navigate('/forgot-password');
+  };
 
   return (
     <Container className="login-page">
       <Box className="login-container">
-        
-        {/* Left section for logo/image */}
         <Box className="left-section">
-          <img src={logo} alt="Logo" className="logo-image" /> {/* Replace with actual image path */}
+          <img src={logo} alt="Logo" className="logo-image" />
         </Box>
-        
-        {/* Right section for login form */}
         <Box className="right-section">
           <Typography className="logo-text">Login</Typography>
 
           <TextField
             variant="outlined"
-            label="Phone number, username, or email"
+            label="Email"
             fullWidth
             required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
           />
 
           <TextField
@@ -46,19 +53,27 @@ const Login = () => {
             type="password"
             fullWidth
             required
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
           />
 
-          <Button variant="contained" className="login-button"   onClick={handleLogin}>
+          <Button variant="contained" className="login-button" onClick={handleLogin}>
             Log in
           </Button>
 
+          {error && <Typography style={{ color: 'red', marginTop: '10px' }}>{error}</Typography>}
+
           <Box className="link-section">
-            <Typography variant="body2"  className="link" onClick={handleForgotPassword}>Forgot password?</Typography>
+            <Typography variant="body2" className="link" onClick={handleForgotPassword}>
+              Forgot password?
+            </Typography>
           </Box>
 
           <Box className="link-section">
             <Typography variant="body2">Don't have an account?</Typography>
-            <Link component="button" className="link" onClick={handleRegister}>Sign up</Link>
+            <Link component="button" className="link" onClick={handleRegister}>
+              Sign up
+            </Link>
           </Box>
         </Box>
       </Box>

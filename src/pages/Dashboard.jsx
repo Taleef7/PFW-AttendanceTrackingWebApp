@@ -1,22 +1,32 @@
-// App.js
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import Sidebar from './../components/Sidebar';
-import StatCard from './../components/StatCard';
-import AttendanceChart from '../components/AttendanceChart';
-import AttendancePieChart from '../components/AttendancePieChart';
+import SemesterManagement from '../components/SemesterManagement'; // Import SemesterManagement
+import { logout } from '../services/authService'; // Import logout function
+import { auth } from '../services/firebaseConfig'; // Import auth to get current user info
 
 function Dashboard() {
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    try {
+      await logout(); // Call the logout function
+      alert("Logged out successfully!");
+      navigate("/login"); // Redirect to login page after logout
+    } catch (error) {
+      console.error("Error logging out:", error.message);
+    }
+  };
+
   return (
     <div className="dashboard-container">
-      <Sidebar />
+      {/* Pass handleLogout as a prop to Sidebar */}
+      <Sidebar onLogout={handleLogout} />
       <div className="main">
         <div className="dashboard">
-          <StatCard title="Current MRR" value="$12.4k" backgroundColor="#FFD700" />
-          <StatCard title="Current Customers" value="16,601" backgroundColor="#FFD700" />
-          <StatCard title="Active Customers" value="33%" backgroundColor="#333" color="#fff" />
-          <StatCard title="Churn Rate" value="2%" backgroundColor="#333" color="#fff" />
-          <AttendanceChart />
-          <AttendancePieChart />
+          <h1>Instructor Dashboard</h1>
+          {/* Semester Management Component */}
+          <SemesterManagement instructorId={auth.currentUser.uid} /> {/* Pass current instructor's UID */}
         </div>
       </div>
     </div>

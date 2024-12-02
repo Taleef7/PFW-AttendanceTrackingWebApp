@@ -12,10 +12,23 @@
 .sidebar__item {
   color: #333;
 }
+
 .sidebar__logout {
-  color: #ff4444; /* Optional: Red color for logout */
+  color: #ff4444; /* Red color for logout */
   padding: 10px 20px;
   margin-top: auto; /* Pushes the logout to the bottom */
+  transition: background-color 0.3s ease, color 0.3s ease; /* Smooth hover effect */
+  cursor: pointer; /* Ensure pointer cursor on hover */
+}
+
+.sidebar__logout:hover {
+  background-color: #f5f5f5; /* Light gray background on hover */
+  color: #d32f2f; /* Darker red text color on hover */
+}
+
+.sidebar__logout:active {
+  background-color: #e0e0e0; /* Slightly darker gray for active state */
+  color: #b71c1c; /* Even darker red for active state */
 }
 
 .header {

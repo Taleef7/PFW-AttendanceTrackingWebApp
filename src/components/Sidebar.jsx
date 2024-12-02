@@ -1,9 +1,8 @@
-// Sidebar.js
 import React from 'react';
 import { Drawer, List, ListItem, ListItemIcon, ListItemText, Divider } from '@mui/material';
 import { Home, AttachMoney, People, BarChart, Settings, DeveloperMode, ExitToApp } from '@mui/icons-material';
 
-function Sidebar() {
+function Sidebar({ onLogout }) {
   return (
     <Drawer variant="permanent" anchor="left" className="sidebar">
       <div className="sidebar__header">
@@ -25,7 +24,8 @@ function Sidebar() {
         ))}
       </List>
       <Divider />
-      <ListItem button className="sidebar__logout">
+      {/* Attach onLogout to the Logout button */}
+      <ListItem button className="sidebar__logout" onClick={onLogout}>
         <ListItemIcon><ExitToApp /></ListItemIcon>
         <ListItemText primary="Logout" />
       </ListItem>

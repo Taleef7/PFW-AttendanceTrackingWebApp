@@ -1,10 +1,11 @@
 import Login from './pages/login';
-import Register from './pages/signUp'
-import ForgotPassword from './pages/forgotPassword'
+import Register from './pages/signUp';
+import ForgotPassword from './pages/forgotPassword';
 import './App.css';
-import './../src/styles/styles.css'
+import './../src/styles/styles.css';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Dashboard from './pages/Dashboard';
+import SemesterManagement from './pages/SemesterManagement'; // Import Semester Management
 
 function App() {
   return (
@@ -15,9 +16,10 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/semester-management" element={<SemesterManagement />} /> {/* New route */}
       </Routes>
     </Router>
-  )
+  );
 }
 
 export default App;
