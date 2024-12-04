@@ -1,0 +1,202 @@
+/* Main container for the page with a gradient background */
+.course-management-page {
+    font-family: 'Arial', sans-serif;
+    background: linear-gradient(135deg, #a29bfe, #6c5ce7); /* Light to dark gradient */
+    padding: 40px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    height: 100vh;
+    overflow: hidden;
+    color: #fff;
+  }
+  
+  /* Header for the course management page */
+  h2 {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: #fff;
+    margin-bottom: 30px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+  }
+  
+  /* Container for course list and add button */
+  .courses-container {
+    width: 100%;
+    max-width: 700px;
+    margin-bottom: 20px;
+  }
+  
+  /* Course card container with subtle hover effect */
+  .course-card {
+    background-color: white;
+    padding: 20px;
+    margin: 10px 0;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  
+  .course-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+  }
+  
+  /* Course title */
+  .course-card p {
+    font-size: 1.3rem;
+    color: #333;
+    margin: 0;
+    font-weight: 500;
+  }
+  
+  /* Edit and Delete buttons */
+  .course-card button {
+    background-color: #f39c12; /* Bright yellow */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 8px 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+    margin-right: 10px; /* Added space between buttons */
+    font-weight: 500;
+  }
+  
+  .course-card button:hover {
+    background-color: #e67e22; /* Darker orange on hover */
+    transform: scale(1.05);
+  }
+  
+  /* Add course button at the bottom with a 3D effect */
+  .add-course-button {
+    background-color: #1abc9c; /* Bright teal */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 12px 20px;
+    width: 100%;
+    max-width: 250px;
+    cursor: pointer;
+    font-size: 1.1rem;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+    margin-top: 30px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  .add-course-button:hover {
+    background-color: #16a085; /* Darker teal on hover */
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+  }
+  
+  /* Add course form styles with soft shadow */
+  .add-course-form {
+    background-color: white;
+    padding: 30px;
+    width: 100%;
+    max-width: 600px;
+    border-radius: 12px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
+    transition: transform 0.3s ease-in-out;
+  }
+  
+  /* Hover effect for the form container */
+  .add-course-form:hover {
+    transform: translateY(-5px);
+  }
+  
+  .add-course-form h3 {
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 25px;
+    text-align: center;
+  }
+  
+  /* Input fields inside the form with focus animation */
+  .add-course-form input {
+    width: 100%;
+    padding: 12px;
+    margin: 10px 0;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+  }
+  
+  .add-course-form input:focus {
+    border-color: #6c5ce7;
+    outline: none;
+    box-shadow: 0 0 5px rgba(108, 92, 231, 0.5);
+  }
+  
+  /* Button inside the form */
+  .add-course-form button {
+    background-color: #f39c12; /* Bright yellow */
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 12px 20px;
+    width: 100%;
+    max-width: 250px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+    margin-top: 20px;
+  }
+  
+  .add-course-form button:hover {
+    background-color: #e67e22; /* Darker orange on hover */
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+  }
+  
+  /* Overlay style when form is displayed */
+  .overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    animation: fadeIn 0.3s ease-in-out;
+  }
+  
+  /* Show overlay when the form is visible */
+  .overlay.show {
+    display: flex;
+  }
+  
+  /* Close button for the form */
+  .close-button {
+    background-color: #e74c3c;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    cursor: pointer;
+    font-size: 1rem;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+    margin-top: 15px;
+  }
+  
+  .close-button:hover {
+    background-color: #c0392b;
+  }
+  
+  /* Keyframe animation for fade-in effect */
+  @keyframes fadeIn {
+    0% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 1;
+    }
+  }
+  

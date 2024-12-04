@@ -28,7 +28,6 @@ function Dashboard() {
           <h1>Instructor Dashboard</h1>
           {/* Semester Management Component */}
           <SemesterManagement instructorId={auth.currentUser.uid} /> {/* Pass current instructor's UID */}
-          <CourseManagement />
         </div>
       </div>
     </div>

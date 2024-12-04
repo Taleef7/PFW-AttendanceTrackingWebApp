@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { collection, addDoc, getDocs, deleteDoc, doc, updateDoc } from "firebase/firestore";
 import { db } from "../services/firebaseConfig"; // Assuming you have firebaseConfig set up
+import './../styles/CourseManagementPage.css';
 
-const CourseManagement = () => {
+const CourseManagementPage = () => {
   const [courses, setCourses] = useState([]); // List of courses
   const [newCourse, setNewCourse] = useState({ 
     ID: "", 
@@ -13,6 +14,7 @@ const CourseManagement = () => {
     totalClasses: 0 
   });
   const [courseToUpdate, setCourseToUpdate] = useState(null); // Course to be updated
+  const [showForm, setShowForm] = useState(false); // Toggle form visibility
 
   // Fetch courses from Firestore
   const fetchCourses = async () => {
@@ -41,19 +43,9 @@ const CourseManagement = () => {
       alert("Course added successfully!");
       fetchCourses(); // Re-fetch the courses after adding
       setNewCourse({ ID: "", name: "", instructor: "", semester: "", students: [], totalClasses: 0 }); // Reset form
+      setShowForm(false); // Hide form after submission
     } catch (error) {
       console.error("Error adding course: ", error);
-    }
-  };
-
-  // Delete a course
-  const handleDeleteCourse = async (courseId) => {
-    try {
-      await deleteDoc(doc(db, "courses", courseId));
-      alert("Course deleted successfully!");
-      fetchCourses(); // Re-fetch the courses after deletion
-    } catch (error) {
-      console.error("Error deleting course: ", error);
     }
   };
 
@@ -72,99 +64,101 @@ const CourseManagement = () => {
         alert("Course updated successfully!");
         fetchCourses(); // Re-fetch the courses after update
         setCourseToUpdate(null); // Reset after update
+        setShowForm(false); // Close the form after update
       } catch (error) {
         console.error("Error updating course: ", error);
       }
     }
   };
 
+  // Delete a course
+  const handleDeleteCourse = async (courseId) => {
+    try {
+      await deleteDoc(doc(db, "courses", courseId));
+      alert("Course deleted successfully!");
+      fetchCourses(); // Re-fetch the courses after deletion
+    } catch (error) {
+      console.error("Error deleting course: ", error);
+    }
+  };
+
+  // Show form to add or edit a course
+  const handleShowForm = (course = null) => {
+    if (course) {
+      setCourseToUpdate(course); // Set course data for editing
+    } else {
+      setCourseToUpdate(null); // Clear data for adding a new course
+    }
+    setShowForm(true);
+  };
+
+  // Hide form
+  const handleCloseForm = () => {
+    setShowForm(false);
+  };
+
   return (
-    <div>
+    <div className="course-management-page">
       <h2>Course Management</h2>
 
-      {/* Add Course Form */}
-      <div>
-        <h3>Add Course</h3>
-        <input
-          type="text"
-          placeholder="Course ID"
-          value={newCourse.ID}
-          onChange={(e) => setNewCourse({ ...newCourse, ID: e.target.value })}
-        />
-        <input
-          type="text"
-          placeholder="Course Name"
-          value={newCourse.name}
-          onChange={(e) => setNewCourse({ ...newCourse, name: e.target.value })}
-        />
-        <input
-          type="text"
-          placeholder="Instructor Reference"
-          value={newCourse.instructor}
-          onChange={(e) => setNewCourse({ ...newCourse, instructor: e.target.value })}
-        />
-        <input
-          type="text"
-          placeholder="Semester Reference"
-          value={newCourse.semester}
-          onChange={(e) => setNewCourse({ ...newCourse, semester: e.target.value })}
-        />
-        <input
-          type="number"
-          placeholder="Total Classes"
-          value={newCourse.totalClasses}
-          onChange={(e) => setNewCourse({ ...newCourse, totalClasses: e.target.value })}
-        />
-        <button onClick={handleAddCourse}>Add Course</button>
+      {/* Course List */}
+      <div className="courses-container">
+        {courses.map((course) => (
+          <div className="course-card" key={course.id}>
+            <p>{course.name}</p>
+            <div>
+              <button className="course-button" onClick={() => handleShowForm(course)}>Edit</button>
+              <button className="course-button" onClick={() => handleDeleteCourse(course.id)}>Delete</button>
+            </div>
+          </div>
+        ))}
+        <button className="add-course-button" onClick={() => handleShowForm()}>Add Course</button>
       </div>
 
-      {/* Update Course Form */}
-      {courseToUpdate && (
-        <div>
-          <h3>Update Course</h3>
-          <input
-            type="text"
-            value={courseToUpdate.name}
-            onChange={(e) => setCourseToUpdate({ ...courseToUpdate, name: e.target.value })}
-          />
-          <input
-            type="text"
-            value={courseToUpdate.instructor}
-            onChange={(e) => setCourseToUpdate({ ...courseToUpdate, instructor: e.target.value })}
-          />
-          <input
-            type="text"
-            value={courseToUpdate.semester}
-            onChange={(e) => setCourseToUpdate({ ...courseToUpdate, semester: e.target.value })}
-          />
-          <input
-            type="number"
-            value={courseToUpdate.totalClasses}
-            onChange={(e) => setCourseToUpdate({ ...courseToUpdate, totalClasses: e.target.value })}
-          />
-          <button onClick={handleUpdateCourse}>Update Course</button>
+      {/* Add Course Form */}
+      {showForm && (
+        <div className="overlay show">
+          <div className="add-course-form">
+            <h3>{courseToUpdate ? "Update Course" : "Add Course"}</h3>
+            <input
+              type="text"
+              placeholder="Course ID"
+              value={courseToUpdate ? courseToUpdate.ID : newCourse.ID}
+              onChange={(e) => setCourseToUpdate({ ...courseToUpdate, ID: e.target.value })}
+            />
+            <input
+              type="text"
+              placeholder="Course Name"
+              value={courseToUpdate ? courseToUpdate.name : newCourse.name}
+              onChange={(e) => setCourseToUpdate({ ...courseToUpdate, name: e.target.value })}
+            />
+            <input
+              type="text"
+              placeholder="Instructor Reference"
+              value={courseToUpdate ? courseToUpdate.instructor : newCourse.instructor}
+              onChange={(e) => setCourseToUpdate({ ...courseToUpdate, instructor: e.target.value })}
+            />
+            <input
+              type="text"
+              placeholder="Semester Reference"
+              value={courseToUpdate ? courseToUpdate.semester : newCourse.semester}
+              onChange={(e) => setCourseToUpdate({ ...courseToUpdate, semester: e.target.value })}
+            />
+            <input
+              type="number"
+              placeholder="Total Classes"
+              value={courseToUpdate ? courseToUpdate.totalClasses : newCourse.totalClasses}
+              onChange={(e) => setCourseToUpdate({ ...courseToUpdate, totalClasses: e.target.value })}
+            />
+            <button onClick={courseToUpdate ? handleUpdateCourse : handleAddCourse}>
+              {courseToUpdate ? "Update Course" : "Add Course"}
+            </button>
+            <button className="close-button" onClick={handleCloseForm}>Cancel</button>
+          </div>
         </div>
       )}
-
-      {/* List of Courses */}
-      <div>
-        <h3>Courses List</h3>
-        <ul>
-          {courses.length === 0 ? (
-            <p>No courses available.</p>
-          ) : (
-            courses.map((course) => (
-              <li key={course.id}>
-                <p>{course.name}</p>
-                <button onClick={() => setCourseToUpdate(course)}>Edit</button>
-                <button onClick={() => handleDeleteCourse(course.id)}>Delete</button>
-              </li>
-            ))
-          )}
-        </ul>
-      </div>
     </div>
   );
 };
 
-export default CourseManagement;
+export default CourseManagementPage;

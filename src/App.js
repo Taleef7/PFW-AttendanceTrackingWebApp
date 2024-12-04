@@ -7,6 +7,7 @@ import './../src/styles/styles.css';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Dashboard from './pages/Dashboard';
 import SemesterManagement from './components/SemesterManagement'; // Import Semester Management
+import CourseManagement from './components/CourseManagement';
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/coursedashboard" element={<CourseDashboard/>} />
         <Route path="/semester-management" element={<SemesterManagement />} /> {/* New route */}
+        <Route path="/course-management" element={<CourseManagement />} /> {/* New route */}
       </Routes>
     </Router>
   );
