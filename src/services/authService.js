@@ -1,34 +1,61 @@
-import { auth } from './firebaseConfig'; // Import Firebase auth from your config
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from 'firebase/auth';
+import { getAuth, createUserWithEmailAndPassword, sendEmailVerification, signInWithEmailAndPassword, signOut, fetchSignInMethodsForEmail } from "firebase/auth";
 
-// Sign up a new user
 export const signup = async (email, password) => {
+  const auth = getAuth();
   try {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    return userCredential.user; // Return user info
+    const user = userCredential.user;
+
+    await sendEmailVerification(user);
+    console.log("Verification email sent!");
   } catch (error) {
-    console.error("Error signing up:", error.message);
-    throw error; // Rethrow to handle in UI
+    throw new Error(error.message);
   }
 };
 
-// Log in an existing user
 export const login = async (email, password) => {
+  const auth = getAuth();
   try {
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
-    return userCredential.user;
+    const user = userCredential.user;
+    
+    if (!user.emailVerified) {
+      throw new Error("Please verify your email before logging in.");
+    }
+
+    return user;
   } catch (error) {
-    console.error("Error logging in:", error.message);
-    throw error;
+    throw new Error(error.message);
   }
 };
 
-// Log out the user
-export const logout = async () => {
+export const logout = () => {
+  const auth = getAuth();
+  signOut(auth)
+    .then(() => {
+      console.log("User logged out");
+    })
+    .catch((error) => {
+      console.error("Error logging out:", error.message);
+    });
+};
+
+export const checkEmailVerifiedByEmail = async (email) => {
+  const auth = getAuth();
   try {
-    await signOut(auth);
+      const user = auth.currentUser;
+      return user ? user.emailVerified : false;
   } catch (error) {
-    console.error("Error logging out:", error.message);
-    throw error;
+    console.error("Error checking email verification:", error.message);
+    return false;
+  }
+};
+export const resendVerificationEmail = async (user) => {
+  const auth = getAuth();
+  try {
+    await sendEmailVerification(user);
+    console.log("Verification email re-sent!");
+  } catch (error) {
+    throw new Error("Error re-sending verification email:", error.message);
   }
 };

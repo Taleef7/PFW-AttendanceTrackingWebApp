@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Container, TextField, Button, Typography, Box, Link } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import { login } from '../services/authService'; // Import the login function
+import { login, checkEmailVerifiedByEmail } from '../services/authService'; // Import the login function
 import "./../styles/styles.css";
 import logo from "./../assets/logo.jpg";
 
@@ -13,9 +13,15 @@ const Login = () => {
 
   const handleLogin = async () => {
     try {
-      await login(email, password); // Call login function from authService.js
-      alert("Login successful!");
-      navigate('/dashboard'); // Redirect to dashboard on success
+      const isUserVerified = await checkEmailVerifiedByEmail(email);
+      if(isUserVerified){
+        await login(email, password);
+        alert("Login successful!");
+        navigate('/dashboard');  
+      } else {
+        alert("Your Email is not Verified, Please verify your email and then login");
+        navigate('/login');
+      }
     } catch (err) {
       setError(err.message);
     }
