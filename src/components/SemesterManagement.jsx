@@ -10,29 +10,42 @@ import {
   where,
 } from "firebase/firestore";
 import { db } from "../services/firebaseConfig";
+import {
+  Box,
+  Typography,
+  Button,
+  Modal,
+  TextField,
+  Card,
+  CardContent,
+  IconButton,
+} from "@mui/material";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
+import AddIcon from "@mui/icons-material/Add";
+import { useNavigate } from "react-router-dom";
 
 const SemesterManagement = ({ instructorId }) => {
-  const [semesters, setSemesters] = useState([]); // List of semesters
-  // const [selectedSemester, setSelectedSemester] = useState(""); // Current semester
+  const [semesters, setSemesters] = useState([]);
   const [newSemester, setNewSemester] = useState({
     name: "",
     startDate: "",
     endDate: "",
-  }); // New semester details
-  const [editMode, setEditMode] = useState(false); // Toggle edit mode
-  const [editingSemesterId, setEditingSemesterId] = useState(null); // Store the ID of the semester being edited
+  });
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(""); // To handle errors
+  const [error, setError] = useState("");
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingSemester, setEditingSemester] = useState(null);
+  const navigate = useNavigate();
 
-  // Fetch semesters for the instructor
   useEffect(() => {
     const fetchSemesters = async () => {
       setLoading(true);
-      setError(""); // Reset errors
+      setError("");
       try {
         const q = query(
           collection(db, "semesters"),
-          where("instructor", "==", `/instructors/${instructorId}`) // Filter by instructor reference
+          where("instructor", "==", `/instructors/${instructorId}`)
         );
         const querySnapshot = await getDocs(q);
         const fetchedSemesters = [];
@@ -50,170 +63,233 @@ const SemesterManagement = ({ instructorId }) => {
     fetchSemesters();
   }, [instructorId]);
 
-  // Add a new semester
-  const handleAddSemester = async (e) => {
-    e.preventDefault();
-    setError(""); // Reset errors
-    try {
-      if (!newSemester.name || !newSemester.startDate || !newSemester.endDate) {
-        setError("All fields are required.");
-        return;
-      }
-      await addDoc(collection(db, "semesters"), {
-        ...newSemester,
-        instructor: `/instructors/${instructorId}`, // Add instructor reference
+  const openModal = (semester = null) => {
+    if (semester) {
+      setNewSemester({
+        name: semester.name,
+        startDate: semester.startDate,
+        endDate: semester.endDate,
       });
-      alert("Semester added successfully!");
+      setEditingSemester(semester.id);
+    } else {
       setNewSemester({ name: "", startDate: "", endDate: "" });
-      setEditMode(false);
-      // Refresh semesters list
-      setSemesters((prev) => [
-        ...prev,
-        { ...newSemester, instructor: `/instructors/${instructorId}` },
-      ]);
-    } catch (error) {
-      console.error("Error adding semester:", error);
-      setError("Failed to add semester. Please try again.");
+      setEditingSemester(null);
     }
+    setIsModalOpen(true);
   };
 
-  // Edit a semester
-  const handleEditSemester = async (e) => {
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setNewSemester({ name: "", startDate: "", endDate: "" });
+    setEditingSemester(null);
+    setError("");
+  };
+
+  const handleSaveSemester = async (e) => {
     e.preventDefault();
-    setError(""); // Reset errors
+    setError("");
+
+    // Validation: Ensure end date is after start date
+    if (new Date(newSemester.startDate) >= new Date(newSemester.endDate)) {
+      setError("End date must be greater than start date.");
+      return;
+    }
+
+    if (!newSemester.name || !newSemester.startDate || !newSemester.endDate) {
+      setError("All fields are required.");
+      return;
+    }
+
     try {
-      if (!newSemester.name || !newSemester.startDate || !newSemester.endDate) {
-        setError("All fields are required.");
-        return;
+      if (editingSemester) {
+        const semesterRef = doc(db, "semesters", editingSemester);
+        await updateDoc(semesterRef, newSemester);
+        setSemesters((prev) =>
+          prev.map((semester) =>
+            semester.id === editingSemester
+              ? { ...semester, ...newSemester }
+              : semester
+          )
+        );
+        alert("Semester updated successfully!");
+      } else {
+        const docRef = await addDoc(collection(db, "semesters"), {
+          ...newSemester,
+          instructor: `/instructors/${instructorId}`,
+        });
+        setSemesters([
+          ...semesters,
+          { id: docRef.id, ...newSemester, instructor: `/instructors/${instructorId}` },
+        ]);
+        alert("Semester added successfully!");
       }
-      const semesterRef = doc(db, "semesters", editingSemesterId);
-      await updateDoc(semesterRef, newSemester);
-      alert("Semester updated successfully!");
-      setSemesters((prev) =>
-        prev.map((semester) =>
-          semester.id === editingSemesterId
-            ? { ...semester, ...newSemester }
-            : semester
-        )
-      );
-      setNewSemester({ name: "", startDate: "", endDate: "" });
-      setEditMode(false);
-      setEditingSemesterId(null);
+
+      closeModal();
     } catch (error) {
-      console.error("Error updating semester:", error);
-      setError("Failed to update semester. Please try again.");
+      console.error("Error saving semester:", error);
+      setError("Failed to save semester. Please try again.");
     }
   };
 
-  // Remove a semester
   const handleRemoveSemester = async (semesterId) => {
-    setError(""); // Reset errors
+    setError("");
     try {
       await deleteDoc(doc(db, "semesters", semesterId));
       alert("Semester removed successfully!");
-      setSemesters((prev) =>
-        prev.filter((semester) => semester.id !== semesterId)
-      );
+      setSemesters((prev) => prev.filter((semester) => semester.id !== semesterId));
     } catch (error) {
       console.error("Error deleting semester:", error);
       setError("Failed to delete semester. Please try again.");
     }
   };
 
-  // Populate form for editing a semester
-  const handlePopulateForEdit = (semester) => {
-    setNewSemester({
-      name: semester.name,
-      startDate: semester.startDate,
-      endDate: semester.endDate,
-    });
-    setEditMode(true);
-    setEditingSemesterId(semester.id);
+  const handleNavigateToCourseManagement = (semesterId) => {
+    navigate(`/course-management/${semesterId}`);
   };
 
   return (
-    <div className="semester-management-container">
-      <h3>Semester Management</h3>
+    <Box>
+      <Typography variant="h5" sx={{ marginBottom: "1rem" }}>
+        Semester Management
+      </Typography>
 
-      {/* Error Message */}
-      {error && <p className="error-message">{error}</p>}
-
-      {/* Loading State */}
       {loading ? (
-        <p>Loading semesters...</p>
+        <Typography>Loading semesters...</Typography>
+      ) : semesters.length > 0 ? (
+        <Box
+          sx={{
+            display: "flex",
+            gap: "1rem",
+            flexWrap: "wrap",
+            marginBottom: "1rem",
+          }}
+        >
+          {semesters.map((semester) => (
+            <Card
+              key={semester.id}
+              sx={{
+                minWidth: "250px",
+                padding: "1rem",
+                boxShadow: 3,
+                borderRadius: "8px",
+                cursor: "pointer",
+              }}
+              onClick={() => handleNavigateToCourseManagement(semester.id)}
+            >
+              <CardContent>
+                <Typography variant="h6">{semester.name}</Typography>
+                <Typography variant="body2">
+                  {semester.startDate} - {semester.endDate}
+                </Typography>
+                <Box sx={{ marginTop: "1rem", display: "flex", gap: "0.5rem" }}>
+                  <IconButton
+                    color="primary"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      openModal(semester);
+                    }}
+                  >
+                    <EditIcon />
+                  </IconButton>
+                  <IconButton
+                    color="error"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleRemoveSemester(semester.id);
+                    }}
+                  >
+                    <DeleteIcon />
+                  </IconButton>
+                </Box>
+              </CardContent>
+            </Card>
+          ))}
+        </Box>
       ) : (
-        <>
-          {/* Add/Edit Semester Form */}
-          <form
-            onSubmit={editMode ? handleEditSemester : handleAddSemester}
-            className="semester-form"
-          >
-            <h4>{editMode ? "Edit Semester" : "Add New Semester"}</h4>
-            <input
-              type="text"
-              placeholder="Semester Name"
+        <Typography>No semesters found. Please add a semester.</Typography>
+      )}
+
+      <Button
+        variant="contained"
+        startIcon={<AddIcon />}
+        onClick={() => openModal()}
+      >
+        Add Semester
+      </Button>
+
+      <Modal
+        open={isModalOpen}
+        onClose={closeModal}
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        <Box
+          sx={{
+            width: 400,
+            backgroundColor: "#fff",
+            padding: "2rem",
+            borderRadius: "8px",
+            boxShadow: 24,
+          }}
+        >
+          <Typography variant="h6" sx={{ marginBottom: "1rem" }}>
+            {editingSemester ? "Edit Semester" : "Add Semester"}
+          </Typography>
+          {error && (
+            <Typography color="error" sx={{ marginBottom: "1rem" }}>
+              {error}
+            </Typography>
+          )}
+          <form onSubmit={handleSaveSemester}>
+            <TextField
+              fullWidth
+              label="Semester Name"
               value={newSemester.name}
               onChange={(e) =>
                 setNewSemester({ ...newSemester, name: e.target.value })
               }
+              sx={{ marginBottom: "1rem" }}
               required
             />
-            <input
+            <TextField
+              fullWidth
               type="date"
+              label="Start Date"
+              InputLabelProps={{ shrink: true }}
               value={newSemester.startDate}
               onChange={(e) =>
                 setNewSemester({ ...newSemester, startDate: e.target.value })
               }
+              sx={{ marginBottom: "1rem" }}
               required
             />
-            <input
+            <TextField
+              fullWidth
               type="date"
+              label="End Date"
+              InputLabelProps={{ shrink: true }}
               value={newSemester.endDate}
               onChange={(e) =>
                 setNewSemester({ ...newSemester, endDate: e.target.value })
               }
+              sx={{ marginBottom: "1rem" }}
               required
             />
-            <button type="submit" disabled={loading}>
-              {editMode ? "Update Semester" : "Add Semester"}
-            </button>
-            {editMode && (
-              <button
-                type="button"
-                onClick={() => {
-                  setEditMode(false);
-                  setNewSemester({ name: "", startDate: "", endDate: "" });
-                  setEditingSemesterId(null);
-                }}
-              >
+            <Box sx={{ display: "flex", justifyContent: "flex-end", gap: "1rem" }}>
+              <Button variant="outlined" onClick={closeModal}>
                 Cancel
-              </button>
-            )}
+              </Button>
+              <Button type="submit" variant="contained">
+                {editingSemester ? "Update Semester" : "Add Semester"}
+              </Button>
+            </Box>
           </form>
-
-          {/* Semester List */}
-          {semesters.length > 0 ? (
-            <div className="semester-list">
-              {semesters.map((semester) => (
-                <div key={semester.id} className="semester-item">
-                  <p>
-                    {semester.name} ({semester.startDate} - {semester.endDate})
-                  </p>
-                  <button onClick={() => handlePopulateForEdit(semester)}>
-                    Edit
-                  </button>
-                  <button onClick={() => handleRemoveSemester(semester.id)}>
-                    Remove
-                  </button>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p>No semesters found. Please add a semester to get started.</p>
-          )}
-        </>
-      )}
-    </div>
+        </Box>
+      </Modal>
+    </Box>
   );
 };
 
