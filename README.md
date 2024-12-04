@@ -3,6 +3,10 @@ FRONTEND - REACT + MATERIAL-UI
 BACKEND - FIREBASE
 DATABASE - FIREBASE REALTIME
 
+# RUN APP
+npm install
+npm run app
+
 
 ## 1. Instructor Collection
 Contains login information and basic details of the instructor (only instructors log in).
