@@ -38,6 +38,7 @@ const SemesterManagement = ({ instructorId }) => {
   const [editingSemester, setEditingSemester] = useState(null);
   const navigate = useNavigate();
 
+  // Fetch semesters and sort by start date
   useEffect(() => {
     const fetchSemesters = async () => {
       setLoading(true);
@@ -52,6 +53,9 @@ const SemesterManagement = ({ instructorId }) => {
         querySnapshot.forEach((doc) => {
           fetchedSemesters.push({ id: doc.id, ...doc.data() });
         });
+
+        // Sort semesters by startDate
+        fetchedSemesters.sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
         setSemesters(fetchedSemesters);
       } catch (error) {
         console.error("Error fetching semesters:", error);
@@ -63,6 +67,7 @@ const SemesterManagement = ({ instructorId }) => {
     fetchSemesters();
   }, [instructorId]);
 
+  // Open modal for add or edit
   const openModal = (semester = null) => {
     if (semester) {
       setNewSemester({
@@ -78,6 +83,7 @@ const SemesterManagement = ({ instructorId }) => {
     setIsModalOpen(true);
   };
 
+  // Close modal
   const closeModal = () => {
     setIsModalOpen(false);
     setNewSemester({ name: "", startDate: "", endDate: "" });
@@ -85,6 +91,16 @@ const SemesterManagement = ({ instructorId }) => {
     setError("");
   };
 
+  // Check for overlapping semesters
+  const isDateConflict = (startDate, endDate) => {
+    return semesters.some(
+      (semester) =>
+        new Date(startDate) <= new Date(semester.endDate) &&
+        new Date(endDate) >= new Date(semester.startDate)
+    );
+  };
+
+  // Add or update a semester
   const handleSaveSemester = async (e) => {
     e.preventDefault();
     setError("");
@@ -92,6 +108,12 @@ const SemesterManagement = ({ instructorId }) => {
     // Validation: Ensure end date is after start date
     if (new Date(newSemester.startDate) >= new Date(newSemester.endDate)) {
       setError("End date must be greater than start date.");
+      return;
+    }
+
+    // Validation: Ensure no overlapping semesters
+    if (isDateConflict(newSemester.startDate, newSemester.endDate)) {
+      setError("The semester dates overlap with an existing semester.");
       return;
     }
 
@@ -105,11 +127,13 @@ const SemesterManagement = ({ instructorId }) => {
         const semesterRef = doc(db, "semesters", editingSemester);
         await updateDoc(semesterRef, newSemester);
         setSemesters((prev) =>
-          prev.map((semester) =>
-            semester.id === editingSemester
-              ? { ...semester, ...newSemester }
-              : semester
-          )
+          prev
+            .map((semester) =>
+              semester.id === editingSemester
+                ? { ...semester, ...newSemester }
+                : semester
+            )
+            .sort((a, b) => new Date(a.startDate) - new Date(b.startDate)) // Resort after update
         );
         alert("Semester updated successfully!");
       } else {
@@ -117,10 +141,11 @@ const SemesterManagement = ({ instructorId }) => {
           ...newSemester,
           instructor: `/instructors/${instructorId}`,
         });
-        setSemesters([
-          ...semesters,
-          { id: docRef.id, ...newSemester, instructor: `/instructors/${instructorId}` },
-        ]);
+        setSemesters((prev) =>
+          [...prev, { id: docRef.id, ...newSemester, instructor: `/instructors/${instructorId}` }].sort(
+            (a, b) => new Date(a.startDate) - new Date(b.startDate)
+          )
+        );
         alert("Semester added successfully!");
       }
 
@@ -135,8 +160,10 @@ const SemesterManagement = ({ instructorId }) => {
     setError("");
     try {
       await deleteDoc(doc(db, "semesters", semesterId));
+      setSemesters((prev) =>
+        prev.filter((semester) => semester.id !== semesterId)
+      );
       alert("Semester removed successfully!");
-      setSemesters((prev) => prev.filter((semester) => semester.id !== semesterId));
     } catch (error) {
       console.error("Error deleting semester:", error);
       setError("Failed to delete semester. Please try again.");
