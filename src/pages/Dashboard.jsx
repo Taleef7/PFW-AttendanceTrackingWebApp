@@ -2,6 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from './../components/Sidebar';
 import SemesterManagement from '../components/SemesterManagement'; // Import SemesterManagement
+import CourseManagement from '../components/CourseManagement';
 import { logout } from '../services/authService'; // Import logout function
 import { auth } from '../services/firebaseConfig'; // Import auth to get current user info
 
@@ -27,6 +28,7 @@ function Dashboard() {
           <h1>Instructor Dashboard</h1>
           {/* Semester Management Component */}
           <SemesterManagement instructorId={auth.currentUser.uid} /> {/* Pass current instructor's UID */}
+          <CourseManagement />
         </div>
       </div>
     </div>
