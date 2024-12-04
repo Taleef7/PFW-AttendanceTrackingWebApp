@@ -1,6 +1,7 @@
 import Login from './pages/login';
 import Register from './pages/signUp';
 import ForgotPassword from './pages/forgotPassword';
+import CourseDashboard from './pages/courseDashboard';
 import './App.css';
 import './../src/styles/styles.css';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
@@ -16,6 +17,7 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/coursedashboard" element={<CourseDashboard/>} />
         <Route path="/semester-management" element={<SemesterManagement />} /> {/* New route */}
       </Routes>
     </Router>
