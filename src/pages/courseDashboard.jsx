@@ -1,11 +1,14 @@
-// CoursePage.jsx
-import React from "react";
+// src/CoursePage.jsx
+import React, { useState } from "react";
 import {
   Box,
   Typography,
   Grid,
   Card,
   CardContent,
+  Modal,
+  TextField,
+  Button,
 } from "@mui/material";
 import QrCodeScannerIcon from "@mui/icons-material/QrCodeScanner";
 import SendIcon from "@mui/icons-material/Send";
@@ -16,16 +19,21 @@ import DescriptionIcon from "@mui/icons-material/Description";
 import NoteAddIcon from "@mui/icons-material/NoteAdd";
 
 const CoursePage = () => {
-  // Actions for the grid
+  // State to control the Add Student modal
+  const [isAddStudentOpen, setIsAddStudentOpen] = useState(false);
+
+  const openAddStudentModal = () => setIsAddStudentOpen(true);
+  const closeAddStudentModal = () => setIsAddStudentOpen(false);
+
   const actions = [
-    { label: "Scan QR", icon: <QrCodeScannerIcon /> },
-    { label: "Send QR Codes", icon: <SendIcon /> },
-    { label: "Student List", icon: <ListAltIcon /> },
-    { label: "Import Class List", icon: <FileDownloadIcon /> },
-    { label: "Analytics Screen", icon: <BarChartIcon /> },
-    { label: "Generate Student Report", icon: <DescriptionIcon /> },
-    { label: "Individual Student Report", icon: <DescriptionIcon /> },
-    { label: "Add Student", icon: <NoteAddIcon /> },
+    { label: "Scan QR", icon: <QrCodeScannerIcon />, onClick: () => console.log("Scan QR clicked") },
+    { label: "Send QR Codes", icon: <SendIcon />, onClick: () => console.log("Send QR Codes clicked") },
+    { label: "Student List", icon: <ListAltIcon />, onClick: () => console.log("Student List clicked") },
+    { label: "Import Class List", icon: <FileDownloadIcon />, onClick: () => console.log("Import Class List clicked") },
+    { label: "Analytics Screen", icon: <BarChartIcon />, onClick: () => console.log("Analytics Screen clicked") },
+    { label: "Generate Student Report", icon: <DescriptionIcon />, onClick: () => console.log("Generate Student Report clicked") },
+    { label: "Individual Student Report", icon: <DescriptionIcon />, onClick: () => console.log("Individual Student Report clicked") },
+    { label: "Add Student", icon: <NoteAddIcon />, onClick: openAddStudentModal },
   ];
 
   return (
@@ -53,12 +61,14 @@ const CoursePage = () => {
                 alignItems: "center",
                 padding: "1rem",
                 boxShadow: 3,
-                transition: "transform 0.2s",
+                transition: "transform 0.2s, box-shadow 0.2s",
                 "&:hover": {
                   transform: "translateY(-4px)",
                   boxShadow: 6,
+                  cursor: "pointer",
                 },
               }}
+              onClick={action.onClick}
             >
               <CardContent
                 sx={{
@@ -67,7 +77,13 @@ const CoursePage = () => {
                   alignItems: "center",
                 }}
               >
-                <Box sx={{ fontSize: "2rem", color: "#673ab7", marginBottom: "0.5rem" }}>
+                <Box
+                  sx={{
+                    fontSize: "2rem",
+                    color: "#673ab7",
+                    marginBottom: "0.5rem",
+                  }}
+                >
                   {action.icon}
                 </Box>
                 <Typography variant="body1" sx={{ fontWeight: 600 }}>
@@ -78,6 +94,70 @@ const CoursePage = () => {
           </Grid>
         ))}
       </Grid>
+
+      {/* Add Student Modal */}
+      <Modal
+        open={isAddStudentOpen}
+        onClose={closeAddStudentModal}
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        <Box
+          sx={{
+            backgroundColor: "#fff",
+            padding: "2rem",
+            borderRadius: "8px",
+            width: "400px",
+            boxShadow: 24,
+          }}
+        >
+          <Typography variant="h6" sx={{ marginBottom: "1rem" }}>
+            Add Student
+          </Typography>
+          <TextField
+            fullWidth
+            label="Student Name"
+            variant="outlined"
+            sx={{ marginBottom: "1rem" }}
+          />
+          <TextField
+            fullWidth
+            label="Email"
+            type="email"
+            variant="outlined"
+            sx={{ marginBottom: "1rem" }}
+          />
+          <TextField
+            fullWidth
+            label="ID Number"
+            variant="outlined"
+            sx={{ marginBottom: "1rem" }}
+          />
+          <Button
+            variant="contained"
+            color="primary"
+            fullWidth
+            sx={{ marginBottom: "1rem" }}
+            onClick={() => {
+              console.log("Student added");
+              closeAddStudentModal();
+            }}
+          >
+            Add Student
+          </Button>
+          <Button
+            variant="outlined"
+            color="secondary"
+            fullWidth
+            onClick={closeAddStudentModal}
+          >
+            Cancel
+          </Button>
+        </Box>
+      </Modal>
     </Box>
   );
 };
