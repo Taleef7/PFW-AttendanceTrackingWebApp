@@ -1,4 +1,3 @@
-// src/CoursePage.jsx
 import React, { useState } from "react";
 import {
   Box,
@@ -17,23 +16,24 @@ import FileDownloadIcon from "@mui/icons-material/FileDownload";
 import BarChartIcon from "@mui/icons-material/BarChart";
 import DescriptionIcon from "@mui/icons-material/Description";
 import NoteAddIcon from "@mui/icons-material/NoteAdd";
+import { useParams } from "react-router-dom";
 
 const CoursePage = () => {
-  // State to control the Add Student modal
+  const { courseName } = useParams(); // Retrieve course name from route params
   const [isAddStudentOpen, setIsAddStudentOpen] = useState(false);
 
   const openAddStudentModal = () => setIsAddStudentOpen(true);
   const closeAddStudentModal = () => setIsAddStudentOpen(false);
 
   const actions = [
-    { label: "Scan QR", icon: <QrCodeScannerIcon />, onClick: () => console.log("Scan QR clicked") },
-    { label: "Send QR Codes", icon: <SendIcon />, onClick: () => console.log("Send QR Codes clicked") },
-    { label: "Student List", icon: <ListAltIcon />, onClick: () => console.log("Student List clicked") },
-    { label: "Import Class List", icon: <FileDownloadIcon />, onClick: () => console.log("Import Class List clicked") },
-    { label: "Analytics Screen", icon: <BarChartIcon />, onClick: () => console.log("Analytics Screen clicked") },
-    { label: "Generate Student Report", icon: <DescriptionIcon />, onClick: () => console.log("Generate Student Report clicked") },
-    { label: "Individual Student Report", icon: <DescriptionIcon />, onClick: () => console.log("Individual Student Report clicked") },
-    { label: "Add Student", icon: <NoteAddIcon />, onClick: openAddStudentModal },
+    { label: "Scan QR", icon: <QrCodeScannerIcon />, path: "/scan-qr" },
+    { label: "Send QR Codes", icon: <SendIcon />, path: "/send-qr" },
+    { label: "Student List", icon: <ListAltIcon />, path: "/student-list" },
+    { label: "Import Class List", icon: <FileDownloadIcon />, path: "/import-class" },
+    { label: "Analytics Screen", icon: <BarChartIcon />, path: "/analytics" },
+    { label: "Generate Student Report", icon: <DescriptionIcon />, path: "/generate-report" },
+    { label: "Individual Student Report", icon: <DescriptionIcon />, path: "/student-report" },
+    { label: "Add Student", icon: <NoteAddIcon />, path: "/add-student" },
   ];
 
   return (
@@ -47,7 +47,7 @@ const CoursePage = () => {
     >
       {/* Header */}
       <Typography variant="h4" component="h1" sx={{ marginBottom: "1.5rem" }}>
-        Software Engineering
+        {courseName || "Course Dashboard"}
       </Typography>
 
       {/* Action Grid */}

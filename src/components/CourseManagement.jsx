@@ -9,18 +9,18 @@ import {
   TextField,
   Alert,
   Divider,
-  Button, // Add this line
+  Button,
 } from "@mui/material";
-
 import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { collection, addDoc, getDocs, deleteDoc, doc, updateDoc } from "firebase/firestore";
 import { db } from "../services/firebaseConfig";
+import { useNavigate } from "react-router-dom"; // For navigation
 
 const CourseManagementPage = () => {
   const [courses, setCourses] = useState([]);
-  const [newCourse, setNewCourse] = useState({
+  const [courseForm, setCourseForm] = useState({
     ID: "",
     name: "",
     instructor: "/instructors/instructor1",
@@ -28,9 +28,11 @@ const CourseManagementPage = () => {
     students: [],
     totalClasses: 0,
   });
-  const [courseToUpdate, setCourseToUpdate] = useState(null);
+  const [courseToEdit, setCourseToEdit] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [error, setError] = useState("");
+
+  const navigate = useNavigate(); // Initialize navigation
 
   const fetchCourses = async () => {
     const coursesCollection = collection(db, "courses");
@@ -52,32 +54,23 @@ const CourseManagementPage = () => {
     return true;
   };
 
-  const handleAddCourse = async () => {
-    if (!validateForm(newCourse)) return;
+  const handleAddOrUpdateCourse = async () => {
+    if (!validateForm(courseForm)) return;
 
     try {
-      await addDoc(collection(db, "courses"), newCourse);
-      alert("Course added successfully!");
-      fetchCourses();
-      setNewCourse({ ID: "", name: "", instructor: "", semester: "", students: [], totalClasses: 0 });
-      setShowForm(false);
-    } catch (error) {
-      console.error("Error adding course: ", error);
-    }
-  };
+      if (courseToEdit) {
+        const courseRef = doc(db, "courses", courseToEdit.id);
+        await updateDoc(courseRef, courseForm);
+        alert("Course updated successfully!");
+      } else {
+        await addDoc(collection(db, "courses"), courseForm);
+        alert("Course added successfully!");
+      }
 
-  const handleUpdateCourse = async () => {
-    if (!validateForm(courseToUpdate)) return;
-
-    try {
-      const courseRef = doc(db, "courses", courseToUpdate.id);
-      await updateDoc(courseRef, courseToUpdate);
-      alert("Course updated successfully!");
       fetchCourses();
-      setCourseToUpdate(null);
-      setShowForm(false);
+      handleCloseForm();
     } catch (error) {
-      console.error("Error updating course: ", error);
+      console.error("Error saving course: ", error);
     }
   };
 
@@ -92,14 +85,32 @@ const CourseManagementPage = () => {
   };
 
   const handleShowForm = (course = null) => {
-    if (course) setCourseToUpdate(course);
-    else setCourseToUpdate(null);
+    if (course) {
+      setCourseForm(course);
+      setCourseToEdit(course);
+    } else {
+      setCourseForm({
+        ID: "",
+        name: "",
+        instructor: "/instructors/instructor1",
+        semester: "/semesters/semester1",
+        students: [],
+        totalClasses: 0,
+      });
+      setCourseToEdit(null);
+    }
     setShowForm(true);
   };
 
   const handleCloseForm = () => {
     setError("");
     setShowForm(false);
+    setCourseToEdit(null);
+  };
+
+  // Navigate to Course Dashboard
+  const handleNavigateToCourse = (courseName) => {
+    navigate(`/course-dashboard/${courseName}`);
   };
 
   return (
@@ -132,7 +143,14 @@ const CourseManagementPage = () => {
               maxWidth: 600,
               padding: "1rem",
               boxShadow: 3,
+              cursor: "pointer",
+              transition: "transform 0.2s",
+              "&:hover": {
+                transform: "translateY(-4px)",
+                boxShadow: 6,
+              },
             }}
+            onClick={() => handleNavigateToCourse(course.name)} // Navigate on card click
           >
             <CardContent>
               <Box
@@ -144,16 +162,24 @@ const CourseManagementPage = () => {
               >
                 <Typography variant="h6">{course.name}</Typography>
                 <Box>
+                  {/* Edit Button */}
                   <IconButton
                     color="primary"
-                    onClick={() => handleShowForm(course)}
+                    onClick={(e) => {
+                      e.stopPropagation(); // Prevent card click
+                      handleShowForm(course);
+                    }}
                     sx={{ marginRight: 1 }}
                   >
                     <EditIcon />
                   </IconButton>
+                  {/* Delete Button */}
                   <IconButton
                     color="error"
-                    onClick={() => handleDeleteCourse(course.id)}
+                    onClick={(e) => {
+                      e.stopPropagation(); // Prevent card click
+                      handleDeleteCourse(course.id);
+                    }}
                   >
                     <DeleteIcon />
                   </IconButton>
@@ -167,7 +193,7 @@ const CourseManagementPage = () => {
           </Card>
         ))}
 
-        {/* Add Course Button as Icon */}
+        {/* Add Course Button */}
         <IconButton
           color="primary"
           onClick={() => handleShowForm()}
@@ -199,7 +225,7 @@ const CourseManagementPage = () => {
           }}
         >
           <Typography variant="h6" gutterBottom>
-            {courseToUpdate ? "Update Course" : "Add Course"}
+            {courseToEdit ? "Edit Course" : "Add Course"}
           </Typography>
 
           {error && (
@@ -211,44 +237,32 @@ const CourseManagementPage = () => {
           <TextField
             fullWidth
             label="Course ID"
-            value={courseToUpdate ? courseToUpdate.ID : newCourse.ID}
-            onChange={(e) =>
-              courseToUpdate
-                ? setCourseToUpdate({ ...courseToUpdate, ID: e.target.value })
-                : setNewCourse({ ...newCourse, ID: e.target.value })
-            }
+            value={courseForm.ID}
+            onChange={(e) => setCourseForm({ ...courseForm, ID: e.target.value })}
             sx={{ marginBottom: "1rem" }}
           />
           <TextField
             fullWidth
             label="Course Name"
-            value={courseToUpdate ? courseToUpdate.name : newCourse.name}
-            onChange={(e) =>
-              courseToUpdate
-                ? setCourseToUpdate({ ...courseToUpdate, name: e.target.value })
-                : setNewCourse({ ...newCourse, name: e.target.value })
-            }
+            value={courseForm.name}
+            onChange={(e) => setCourseForm({ ...courseForm, name: e.target.value })}
             sx={{ marginBottom: "1rem" }}
           />
           <TextField
             fullWidth
             label="Instructor Reference"
-            value={courseToUpdate ? courseToUpdate.instructor : newCourse.instructor}
+            value={courseForm.instructor}
             onChange={(e) =>
-              courseToUpdate
-                ? setCourseToUpdate({ ...courseToUpdate, instructor: e.target.value })
-                : setNewCourse({ ...newCourse, instructor: e.target.value })
+              setCourseForm({ ...courseForm, instructor: e.target.value })
             }
             sx={{ marginBottom: "1rem" }}
           />
           <TextField
             fullWidth
             label="Semester Reference"
-            value={courseToUpdate ? courseToUpdate.semester : newCourse.semester}
+            value={courseForm.semester}
             onChange={(e) =>
-              courseToUpdate
-                ? setCourseToUpdate({ ...courseToUpdate, semester: e.target.value })
-                : setNewCourse({ ...newCourse, semester: e.target.value })
+              setCourseForm({ ...courseForm, semester: e.target.value })
             }
             sx={{ marginBottom: "1rem" }}
           />
@@ -256,14 +270,12 @@ const CourseManagementPage = () => {
             fullWidth
             label="Total Classes"
             type="number"
-            value={courseToUpdate ? courseToUpdate.totalClasses : newCourse.totalClasses}
+            value={courseForm.totalClasses}
             onChange={(e) =>
-              courseToUpdate
-                ? setCourseToUpdate({ ...courseToUpdate, totalClasses: e.target.value })
-                : setNewCourse({
-                    ...newCourse,
-                    totalClasses: parseInt(e.target.value, 10) || 0,
-                  })
+              setCourseForm({
+                ...courseForm,
+                totalClasses: parseInt(e.target.value, 10) || 0,
+              })
             }
             sx={{ marginBottom: "1rem" }}
           />
@@ -271,10 +283,10 @@ const CourseManagementPage = () => {
             variant="contained"
             color="primary"
             fullWidth
-            onClick={courseToUpdate ? handleUpdateCourse : handleAddCourse}
+            onClick={handleAddOrUpdateCourse}
             sx={{ marginBottom: "1rem" }}
           >
-            {courseToUpdate ? "Update Course" : "Add Course"}
+            {courseToEdit ? "Update Course" : "Add Course"}
           </Button>
           <Button variant="outlined" color="secondary" fullWidth onClick={handleCloseForm}>
             Cancel
