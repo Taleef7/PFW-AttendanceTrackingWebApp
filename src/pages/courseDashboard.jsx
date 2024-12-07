@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Typography,
@@ -16,25 +16,60 @@ import FileDownloadIcon from "@mui/icons-material/FileDownload";
 import BarChartIcon from "@mui/icons-material/BarChart";
 import DescriptionIcon from "@mui/icons-material/Description";
 import NoteAddIcon from "@mui/icons-material/NoteAdd";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 
-const CoursePage = () => {
-  const { courseName } = useParams(); // Retrieve course name from route params
+const CourseDashboard = () => {
+  const { courseName, semesterId } = useParams(); // Retrieve courseName or semesterId dynamically
   const [isAddStudentOpen, setIsAddStudentOpen] = useState(false);
+  const [newStudent, setNewStudent] = useState({
+    firstName: "",
+    lastName: "",
+    studentId: "",
+    email: "",
+  });
+  const [courseData, setCourseData] = useState(null); // Dynamic course data
+  const navigate = useNavigate();
+
+  // Fetch dynamic course data based on the route parameter
+  useEffect(() => {
+    const fetchCourseData = async () => {
+      // Replace with actual API call or logic
+      const fetchedData = {
+        name: courseName || `Semester ${semesterId}`,
+        actions: [
+          { label: "Scan QR", icon: <QrCodeScannerIcon />, path: `/scan-qr/${semesterId}` },
+          { label: "Send QR Codes", icon: <SendIcon />, path: `/send-qr/${semesterId}` },
+          { label: "Student List", icon: <ListAltIcon />, path: `/student-list/${semesterId}` },
+          { label: "Import Class List", icon: <FileDownloadIcon />, path: `/import-class/${semesterId}` },
+          { label: "Analytics Screen", icon: <BarChartIcon />, path: `/analytics/${semesterId}` },
+          { label: "Generate Student Report", icon: <DescriptionIcon />, path: `/generate-report/${semesterId}` },
+          { label: "Individual Student Report", icon: <DescriptionIcon />, path: `/student-report/${semesterId}` },
+          { label: "Add Student", icon: <NoteAddIcon />, path: "/add-student", onClick: () => setIsAddStudentOpen(true) },
+        ],
+      };
+      setCourseData(fetchedData);
+    };
+
+    fetchCourseData();
+  }, [courseName, semesterId]);
 
   const openAddStudentModal = () => setIsAddStudentOpen(true);
-  const closeAddStudentModal = () => setIsAddStudentOpen(false);
+  const closeAddStudentModal = () => {
+    setIsAddStudentOpen(false);
+    setNewStudent({ firstName: "", lastName: "", studentId: "", email: "" });
+  };
 
-  const actions = [
-    { label: "Scan QR", icon: <QrCodeScannerIcon />, path: "/scan-qr" },
-    { label: "Send QR Codes", icon: <SendIcon />, path: "/send-qr" },
-    { label: "Student List", icon: <ListAltIcon />, path: "/student-list" },
-    { label: "Import Class List", icon: <FileDownloadIcon />, path: "/import-class" },
-    { label: "Analytics Screen", icon: <BarChartIcon />, path: "/analytics" },
-    { label: "Generate Student Report", icon: <DescriptionIcon />, path: "/generate-report" },
-    { label: "Individual Student Report", icon: <DescriptionIcon />, path: "/student-report" },
-    { label: "Add Student", icon: <NoteAddIcon />, path: "/add-student" },
-  ];
+  const handleAddStudent = () => {
+    console.log("New Student Data:", newStudent);
+    closeAddStudentModal();
+  };
+
+  // Handle navigation for each action
+  const handleActionClick = (path) => {
+    navigate(path);
+  };
+
+  if (!courseData) return <Typography>Loading...</Typography>;
 
   return (
     <Box
@@ -47,12 +82,12 @@ const CoursePage = () => {
     >
       {/* Header */}
       <Typography variant="h4" component="h1" sx={{ marginBottom: "1.5rem" }}>
-        {courseName || "Course Dashboard"}
+        {courseData.name || "Course Dashboard"}
       </Typography>
 
       {/* Action Grid */}
       <Grid container spacing={3}>
-        {actions.map((action, index) => (
+        {courseData.actions.map((action, index) => (
           <Grid item xs={12} sm={6} md={4} lg={3} key={index}>
             <Card
               sx={{
@@ -68,7 +103,7 @@ const CoursePage = () => {
                   cursor: "pointer",
                 },
               }}
-              onClick={action.onClick}
+              onClick={() => action.onClick ? action.onClick() : handleActionClick(action.path)}
             >
               <CardContent
                 sx={{
@@ -119,9 +154,36 @@ const CoursePage = () => {
           </Typography>
           <TextField
             fullWidth
-            label="Student Name"
+            label="First Name"
             variant="outlined"
             sx={{ marginBottom: "1rem" }}
+            value={newStudent.firstName}
+            onChange={(e) =>
+              setNewStudent((prev) => ({ ...prev, firstName: e.target.value }))
+            }
+            required
+          />
+          <TextField
+            fullWidth
+            label="Last Name"
+            variant="outlined"
+            sx={{ marginBottom: "1rem" }}
+            value={newStudent.lastName}
+            onChange={(e) =>
+              setNewStudent((prev) => ({ ...prev, lastName: e.target.value }))
+            }
+            required
+          />
+          <TextField
+            fullWidth
+            label="Student ID"
+            variant="outlined"
+            sx={{ marginBottom: "1rem" }}
+            value={newStudent.studentId}
+            onChange={(e) =>
+              setNewStudent((prev) => ({ ...prev, studentId: e.target.value }))
+            }
+            required
           />
           <TextField
             fullWidth
@@ -129,22 +191,18 @@ const CoursePage = () => {
             type="email"
             variant="outlined"
             sx={{ marginBottom: "1rem" }}
-          />
-          <TextField
-            fullWidth
-            label="ID Number"
-            variant="outlined"
-            sx={{ marginBottom: "1rem" }}
+            value={newStudent.email}
+            onChange={(e) =>
+              setNewStudent((prev) => ({ ...prev, email: e.target.value }))
+            }
+            required
           />
           <Button
             variant="contained"
             color="primary"
             fullWidth
             sx={{ marginBottom: "1rem" }}
-            onClick={() => {
-              console.log("Student added");
-              closeAddStudentModal();
-            }}
+            onClick={handleAddStudent}
           >
             Add Student
           </Button>
@@ -162,4 +220,4 @@ const CoursePage = () => {
   );
 };
 
-export default CoursePage;
+export default CourseDashboard;
