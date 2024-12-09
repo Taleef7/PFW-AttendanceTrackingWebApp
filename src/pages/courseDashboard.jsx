@@ -8,6 +8,8 @@ import {
   Modal,
   TextField,
   Button,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import QrCodeScannerIcon from "@mui/icons-material/QrCodeScanner";
 import SendIcon from "@mui/icons-material/Send";
@@ -28,23 +30,31 @@ const CourseDashboard = () => {
     email: "",
   });
   const [courseData, setCourseData] = useState(null); // Dynamic course data
+  const [notificationOpen, setNotificationOpen] = useState(false); // Snackbar state
   const navigate = useNavigate();
 
-  // Fetch dynamic course data based on the route parameter
   useEffect(() => {
+    const resolvedName = courseName || `Semester-${semesterId || "Unknown"}`; // Resolve missing name or ID
     const fetchCourseData = async () => {
-      // Replace with actual API call or logic
       const fetchedData = {
-        name: courseName || `Semester ${semesterId}`,
+        name: resolvedName,
         actions: [
-          { label: "Scan QR", icon: <QrCodeScannerIcon />, path: `/scan-qr/${semesterId}` },
-          { label: "Send QR Codes", icon: <SendIcon />, path: `/send-qr/${semesterId}` },
+          {
+            label: "Scan QR",
+            icon: <QrCodeScannerIcon />,
+            path: `/scan-qr/${courseName || semesterId}`, // Dynamically resolve name or ID
+          },
+          {
+            label: "Send QR Codes",
+            icon: <SendIcon />,
+            onClick: () => setNotificationOpen(true), // Trigger notification
+          },
           { label: "Student List", icon: <ListAltIcon />, path: `/student-list/${semesterId}` },
           { label: "Import Class List", icon: <FileDownloadIcon />, path: `/import-class/${semesterId}` },
           { label: "Analytics Screen", icon: <BarChartIcon />, path: `/analytics/${semesterId}` },
           { label: "Generate Student Report", icon: <DescriptionIcon />, path: `/generate-report/${semesterId}` },
           { label: "Individual Student Report", icon: <DescriptionIcon />, path: `/student-report/${semesterId}` },
-          { label: "Add Student", icon: <NoteAddIcon />, path: "/add-student", onClick: () => setIsAddStudentOpen(true) },
+          { label: "Add Student", icon: <NoteAddIcon />, onClick: () => setIsAddStudentOpen(true) },
         ],
       };
       setCourseData(fetchedData);
@@ -64,9 +74,12 @@ const CourseDashboard = () => {
     closeAddStudentModal();
   };
 
-  // Handle navigation for each action
   const handleActionClick = (path) => {
-    navigate(path);
+    if (path) navigate(path);
+  };
+
+  const handleCloseNotification = () => {
+    setNotificationOpen(false);
   };
 
   if (!courseData) return <Typography>Loading...</Typography>;
@@ -103,7 +116,7 @@ const CourseDashboard = () => {
                   cursor: "pointer",
                 },
               }}
-              onClick={() => action.onClick ? action.onClick() : handleActionClick(action.path)}
+              onClick={() => (action.onClick ? action.onClick() : handleActionClick(action.path))}
             >
               <CardContent
                 sx={{
@@ -216,6 +229,22 @@ const CourseDashboard = () => {
           </Button>
         </Box>
       </Modal>
+
+      {/* Notification */}
+      <Snackbar
+        open={notificationOpen}
+        autoHideDuration={3000}
+        onClose={handleCloseNotification}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+      >
+        <Alert
+          onClose={handleCloseNotification}
+          severity="success"
+          sx={{ width: "100%" }}
+        >
+          QR Codes Sent Successfully!
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };
