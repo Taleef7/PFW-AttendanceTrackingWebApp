@@ -7,7 +7,7 @@ import './../src/styles/styles.css';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Dashboard from './pages/Dashboard';
 import SemesterManagement from './components/SemesterManagement';
-import CourseManagement from './components/CourseManagement';
+import CourseManagementPage from './components/CourseManagement'; // Specific Course Management Page
 import SpecificCourseDashboard from './pages/courseDashboard'; // Specific Course Dashboard
 import ScanQR from './pages/scanQR';
 
@@ -24,14 +24,13 @@ function App() {
         {/* Dashboard and Management Routes */}
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/semester-management" element={<SemesterManagement />} />
-        <Route path="/course-management" element={<CourseManagement />} />
+        <Route path="/course-management/:semesterId" element={<CourseManagementPage />} />
 
         {/* General Course Dashboard */}
         <Route path="/coursedashboard" element={<CourseDashboard />} />
 
         {/* Specific Course Dashboard */}
         <Route path="/course-dashboard/:courseName" element={<SpecificCourseDashboard />} />
-        <Route path="/semester-dashboard/:semesterId" element={<SpecificCourseDashboard />} />
 
         {/* Scan QR */}
         <Route path="/scan-qr/:courseName" element={<ScanQR />} />

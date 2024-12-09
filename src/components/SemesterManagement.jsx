@@ -49,12 +49,12 @@ const SemesterManagement = ({ instructorId }) => {
           where("instructor", "==", `/instructors/${instructorId}`)
         );
         const querySnapshot = await getDocs(q);
-        const fetchedSemesters = [];
-        querySnapshot.forEach((doc) => {
-          fetchedSemesters.push({ id: doc.id, ...doc.data() });
-        });
+        const fetchedSemesters = querySnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
 
-        // Sort semesters by startDate
+        // Sort semesters by start date
         fetchedSemesters.sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
         setSemesters(fetchedSemesters);
       } catch (error) {
@@ -135,7 +135,6 @@ const SemesterManagement = ({ instructorId }) => {
             )
             .sort((a, b) => new Date(a.startDate) - new Date(b.startDate)) // Resort after update
         );
-        alert("Semester updated successfully!");
       } else {
         const docRef = await addDoc(collection(db, "semesters"), {
           ...newSemester,
@@ -146,7 +145,6 @@ const SemesterManagement = ({ instructorId }) => {
             (a, b) => new Date(a.startDate) - new Date(b.startDate)
           )
         );
-        alert("Semester added successfully!");
       }
 
       closeModal();
@@ -163,7 +161,6 @@ const SemesterManagement = ({ instructorId }) => {
       setSemesters((prev) =>
         prev.filter((semester) => semester.id !== semesterId)
       );
-      alert("Semester removed successfully!");
     } catch (error) {
       console.error("Error deleting semester:", error);
       setError("Failed to delete semester. Please try again.");
