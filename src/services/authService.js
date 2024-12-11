@@ -1,4 +1,4 @@
-import { getAuth, createUserWithEmailAndPassword, sendEmailVerification, signInWithEmailAndPassword, signOut, fetchSignInMethodsForEmail } from "firebase/auth";
+import { getAuth, createUserWithEmailAndPassword, sendEmailVerification, signInWithEmailAndPassword, signOut, sendPasswordResetEmail, confirmPasswordReset } from "firebase/auth";
 
 export const signup = async (email, password) => {
   const auth = getAuth();
@@ -25,7 +25,13 @@ export const login = async (email, password) => {
 
     return user;
   } catch (error) {
-    throw new Error(error.message);
+    if (error.code === "auth/wrong-password") {
+      throw new Error("Incorrect password. Please try again.");
+    } else if (error.code === "auth/user-not-found") {
+      throw new Error("No user found with this email.");
+    } else {
+      throw new Error(error.message);
+    }
   }
 };
 
@@ -57,5 +63,29 @@ export const resendVerificationEmail = async (user) => {
     console.log("Verification email re-sent!");
   } catch (error) {
     throw new Error("Error re-sending verification email:", error.message);
+  }
+};
+
+export const sendPasswordReset = async (email) => {
+  const auth = getAuth();
+  try {
+    await sendPasswordResetEmail(auth, email);
+    console.log("Password reset email sent!");
+    return "Password reset email sent. Please check your inbox.";
+  } catch (error) {
+    console.error("Error sending password reset email: ", error.message);
+    return error.message;
+  }
+};
+
+export const resetPassword = async (oobCode, newPassword) => {
+  const auth = getAuth();
+  try {
+    await confirmPasswordReset(auth, oobCode, newPassword);
+    console.log("Password has been reset successfully!");
+    return "Password reset successful. You can now log in with your new password.";
+  } catch (error) {
+    console.error("Error resetting password: ", error.message);
+    return error.message;
   }
 };
