@@ -46,16 +46,6 @@ export const logout = () => {
     });
 };
 
-export const checkEmailVerifiedByEmail = async (email) => {
-  const auth = getAuth();
-  try {
-      const user = auth.currentUser;
-      return user ? user.emailVerified : false;
-  } catch (error) {
-    console.error("Error checking email verification:", error.message);
-    return false;
-  }
-};
 export const resendVerificationEmail = async (user) => {
   const auth = getAuth();
   try {
