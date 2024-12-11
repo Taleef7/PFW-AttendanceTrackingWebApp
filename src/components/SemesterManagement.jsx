@@ -23,7 +23,8 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import AddIcon from "@mui/icons-material/Add";
 import { useNavigate } from "react-router-dom";
 
-const SemesterManagement = ({ instructorId }) => {
+const SemesterManagement = () => {
+  const instructorId = localStorage.getItem('uid');
   const [semesters, setSemesters] = useState([]);
   const [newSemester, setNewSemester] = useState({
     name: "",
@@ -44,7 +45,7 @@ const SemesterManagement = ({ instructorId }) => {
       try {
         const q = query(
           collection(db, "semesters"),
-          where("instructor", "==", `${localStorage.getItem('uid')}`)
+          where("instructor", "==", `${instructorId}`)
         );
         const querySnapshot = await getDocs(q);
         const fetchedSemesters = querySnapshot.docs.map((doc) => ({
@@ -136,10 +137,10 @@ const SemesterManagement = ({ instructorId }) => {
       } else {
         const docRef = await addDoc(collection(db, "semesters"), {
           ...newSemester,
-          instructor: `${localStorage.getItem('uid')}`,
+          instructor: `${instructorId}`,
         });
         setSemesters((prev) =>
-          [...prev, { id: docRef.id, ...newSemester, instructor: `/instructors/${instructorId}` }].sort(
+          [...prev, { id: docRef.id, ...newSemester, instructor: `${instructorId}` }].sort(
             (a, b) => new Date(a.startDate) - new Date(b.startDate)
           )
         );
