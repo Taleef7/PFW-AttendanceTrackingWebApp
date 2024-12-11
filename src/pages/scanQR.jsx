@@ -1,11 +1,18 @@
-import React, { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
-import { Box, Typography, Button } from "@mui/material";
+import React, { useState, useEffect, useRef } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { Box, Typography, Button, Snackbar, Alert } from "@mui/material";
+import QrScanner from "qr-scanner"; // Import QR scanning library
+import { doc, getDoc, addDoc, collection } from "firebase/firestore";
+import { db } from "../services/firebaseConfig";
 
 const ScanQR = () => {
   const { courseName } = useParams(); // Get the course name dynamically
   const [error, setError] = useState(null); // To handle camera errors
-  const [stream, setStream] = useState(null); // Media stream
+  const [successMessage, setSuccessMessage] = useState(null); // Snackbar for success messages
+  const [errorMessage, setErrorMessage] = useState(null); // Snackbar for error messages
+  const videoRef = useRef(null); // Reference to the video element
+  const scannerRef = useRef(null); // Reference to the QR scanner instance
+  const navigate = useNavigate(); // For navigation
 
   useEffect(() => {
     const startCamera = async () => {
@@ -16,7 +23,10 @@ const ScanQR = () => {
             facingMode: "environment", // Use the back camera
           },
         });
-        setStream(mediaStream); // Save the media stream
+        if (videoRef.current) {
+          videoRef.current.srcObject = mediaStream;
+          videoRef.current.onloadedmetadata = () => videoRef.current.play();
+        }
       } catch (err) {
         setError("Unable to access camera. Please check your permissions.");
         console.error("Camera error:", err);
@@ -25,13 +35,68 @@ const ScanQR = () => {
 
     startCamera();
 
-    // Cleanup on component unmount
     return () => {
-      if (stream) {
-        stream.getTracks().forEach((track) => track.stop());
+      // Stop the camera and scanner when the component unmounts
+      if (videoRef.current && videoRef.current.srcObject) {
+        const tracks = videoRef.current.srcObject.getTracks();
+        tracks.forEach((track) => track.stop());
+      }
+      if (scannerRef.current) {
+        scannerRef.current.stop();
       }
     };
   }, []);
+
+  const validateQRCode = async (qrData) => {
+    try {
+      const { studentId, courseId, timestamp } = JSON.parse(qrData);
+
+      // Ensure the scanned QR code matches the course
+      if (courseId !== courseName) {
+        throw new Error("This QR code does not match the current course.");
+      }
+
+      // Check if the student exists in Firestore
+      const studentRef = doc(db, "students", studentId);
+      const studentDoc = await getDoc(studentRef);
+      if (!studentDoc.exists()) {
+        throw new Error("Student does not exist.");
+      }
+
+      // Mark attendance in Firestore
+      await addDoc(collection(db, "attendanceSummaries"), {
+        studentId,
+        courseId,
+        timestamp: new Date().toISOString(),
+        status: "present",
+      });
+
+      setSuccessMessage("Attendance marked successfully!");
+    } catch (err) {
+      console.error("QR Code Validation Error:", err);
+      setErrorMessage(err.message || "Failed to validate QR code.");
+    }
+  };
+
+  const handleQRCodeScan = async () => {
+    if (!videoRef.current) return;
+    const videoElement = videoRef.current;
+
+    if (!scannerRef.current) {
+      scannerRef.current = new QrScanner(
+        videoElement,
+        (result) => {
+          validateQRCode(result.data);
+          scannerRef.current.stop(); // Stop scanning after a successful scan
+        },
+        {
+          returnDetailedScanResult: true,
+        }
+      );
+    }
+
+    scannerRef.current.start(); // Start scanning
+  };
 
   return (
     <Box
@@ -65,6 +130,7 @@ const ScanQR = () => {
         >
           {/* Video Element */}
           <video
+            ref={videoRef}
             autoPlay
             playsInline
             style={{
@@ -72,16 +138,7 @@ const ScanQR = () => {
               height: "100%",
               objectFit: "cover",
             }}
-            ref={(video) => {
-              if (video && stream) {
-                video.srcObject = stream;
-
-                // Ensure video plays after metadata is loaded
-                video.onloadedmetadata = () => {
-                  video.play();
-                };
-              }
-            }}
+            onLoadedData={handleQRCodeScan}
           />
         </Box>
       )}
@@ -90,10 +147,42 @@ const ScanQR = () => {
         variant="outlined"
         color="secondary"
         sx={{ marginTop: "1rem" }}
-        onClick={() => window.history.back()}
+        onClick={() => navigate(`/course-dashboard/${courseName}`)}
       >
         Return to Dashboard
       </Button>
+
+      {/* Success Snackbar */}
+      <Snackbar
+        open={!!successMessage}
+        autoHideDuration={3000}
+        onClose={() => setSuccessMessage(null)}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+      >
+        <Alert
+          severity="success"
+          onClose={() => setSuccessMessage(null)}
+          sx={{ width: "100%" }}
+        >
+          {successMessage}
+        </Alert>
+      </Snackbar>
+
+      {/* Error Snackbar */}
+      <Snackbar
+        open={!!errorMessage}
+        autoHideDuration={3000}
+        onClose={() => setErrorMessage(null)}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+      >
+        <Alert
+          severity="error"
+          onClose={() => setErrorMessage(null)}
+          sx={{ width: "100%" }}
+        >
+          {errorMessage}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };
