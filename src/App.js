@@ -10,7 +10,8 @@ import SemesterManagement from './components/SemesterManagement';
 import CourseManagementPage from './components/CourseManagement'; // Specific Course Management Page
 import SpecificCourseDashboard from './pages/courseDashboard'; // Specific Course Dashboard
 import ScanQR from './pages/scanQR';
-import StudentList from './components/StudentList'; // Student List Component
+import StudentList from './components/StudentList';
+import StudentReport from './components/StudentReport';
 
 function App() {
   return (
@@ -32,7 +33,9 @@ function App() {
 
         {/* Specific Course Dashboard */}
         <Route path="/course-dashboard/:courseId" element={<SpecificCourseDashboard />} />
-
+        <Route path="/student-list/:courseId" element={<StudentList />} />
+        <Route path="/student-report/:courseId" element={ <StudentReport />} />
+ 
         {/* Scan QR */}
         <Route path="/scan-qr/:courseName" element={<ScanQR />} />
 

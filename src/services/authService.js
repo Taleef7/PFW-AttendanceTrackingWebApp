@@ -49,7 +49,6 @@ export const logout = () => {
 };
 
 export const resendVerificationEmail = async (user) => {
-  const auth = getAuth();
   try {
     await sendEmailVerification(user);
     console.log("Verification email re-sent!");

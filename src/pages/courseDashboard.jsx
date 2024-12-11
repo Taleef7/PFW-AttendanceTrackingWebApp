@@ -11,7 +11,7 @@ import {
   Snackbar,
   Alert,
 } from "@mui/material";
-import { getFirestore, collection, query, where, getDocs, addDoc, doc, updateDoc, arrayUnion, getDoc } from "firebase/firestore";
+import { collection, query, where, getDocs, addDoc, doc, updateDoc, arrayUnion, getDoc } from "firebase/firestore";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import QrCodeScannerIcon from "@mui/icons-material/QrCodeScanner";
 import SendIcon from "@mui/icons-material/Send";
@@ -37,7 +37,6 @@ const CourseDashboard = () => {
   const [notificationOpen, setNotificationOpen] = useState(false); // Snackbar state
   const [notificationMessage, setNotificationMessage] = useState(""); // Message for notification
   const [notificationSeverity, setNotificationSeverity] = useState("success"); // Success or error severity
-  const [formSubmitted, setFormSubmitted] = useState(false); // New state to track if the form is submitted
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -56,11 +55,11 @@ const CourseDashboard = () => {
             icon: <SendIcon />,
             onClick: handleQrCodeSent, // Trigger QR code sent notification
           },
-          { label: "Student List", icon: <ListAltIcon />, path: `/student-list/${semesterId}` },
-          { label: "Import Class List", icon: <FileDownloadIcon />, path: `/import-class/${semesterId}` },
-          { label: "Analytics Screen", icon: <BarChartIcon />, path: `/analytics/${semesterId}` },
-          { label: "Generate Student Report", icon: <DescriptionIcon />, path: `/generate-report/${semesterId}` },
-          { label: "Individual Student Report", icon: <DescriptionIcon />, path: `/student-report/${semesterId}` },
+          { label: "Student List", icon: <ListAltIcon />, path: `/student-list/${courseId}` },
+          { label: "Import Class List", icon: <FileDownloadIcon />, path: `/import-class/${courseId}` },
+          { label: "Analytics Screen", icon: <BarChartIcon />, path: `/analytics/${courseId}` },
+          { label: "Generate Student Report", icon: <DescriptionIcon />, path: `/generate-report/${courseId}` },
+          { label: "Individual Student Report", icon: <DescriptionIcon />, path: `/student-report/${courseId}` },
           { label: "Add Student", icon: <NoteAddIcon />, onClick: () => setIsAddStudentOpen(true) },
         ],
       };
@@ -68,19 +67,14 @@ const CourseDashboard = () => {
     };
 
     fetchCourseData();
-  }, [courseId, semesterId]);
+  }, [courseId, semesterId, semesterName]);
 
-  const openAddStudentModal = () => setIsAddStudentOpen(true);
   const closeAddStudentModal = () => {
     setIsAddStudentOpen(false);
-    setFormSubmitted(false); // Reset the form submitted state when closing
     setNewStudent({ firstName: "", lastName: "", studentId: "", email: "" });
   };
 
   const handleAddStudent = async (courseId) => {  
-    // Validate only after form is submitted
-    setFormSubmitted(true);
-
     // Check if fields are empty
     if (!newStudent.firstName || !newStudent.lastName || !newStudent.studentId || !newStudent.email) {
       alert("Please fill in all fields. None of the fields can be empty.");
@@ -153,8 +147,8 @@ const CourseDashboard = () => {
     setNotificationSeverity("success");
   };
 
-  const handleActionClick = (path) => {
-    if (path) navigate(path);
+  const handleActionClick = (path, courseName) => {
+    navigate(path, {state: {courseName: courseName}});
   };
 
   const handleCloseNotification = () => {
@@ -195,7 +189,7 @@ const CourseDashboard = () => {
                   cursor: "pointer",
                 },
               }}
-              onClick={() => (action.onClick ? action.onClick() : handleActionClick(action.path))}
+              onClick={() => (action.onClick ? action.onClick() : handleActionClick(action.path, courseName))}
             >
               <CardContent
                 sx={{
