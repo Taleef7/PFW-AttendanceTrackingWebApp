@@ -11,7 +11,7 @@ import {
   Snackbar,
   Alert,
 } from "@mui/material";
-import { getFirestore, collection, query, where, getDocs, addDoc, doc, updateDoc, arrayUnion } from "firebase/firestore";
+import { getFirestore, collection, query, where, getDocs, addDoc, doc, updateDoc, arrayUnion, getDoc } from "firebase/firestore";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import QrCodeScannerIcon from "@mui/icons-material/QrCodeScanner";
 import SendIcon from "@mui/icons-material/Send";
@@ -88,9 +88,9 @@ const CourseDashboard = () => {
     }
 
     try {
-      // 1. Check if student exists in the student table by studentId
+      // 1. Check if student exists in the student table by email (using email for unique identification)
       const studentRef = collection(db, "students");
-      const q = query(studentRef, where("studentId", "==", newStudent.studentId));
+      const q = query(studentRef, where("email", "==", newStudent.email));
       const studentSnapshot = await getDocs(q);
   
       let studentDoc;
@@ -108,20 +108,30 @@ const CourseDashboard = () => {
         });
         console.log("New student added:", studentDoc.id);
       }
-  
-      // 2. Now add the student to the specific course's student array
+
+      // 2. Check if the student is already in the course's student array
       const courseRef = doc(db, "courses", courseId); // Ensure you're referencing the correct course document
-      await updateDoc(courseRef, {
-        students: arrayUnion(studentDoc.id), // Adding student ID to the course's students array
-      });
-  
-      console.log("Student added to course:", courseId);
+      const courseDoc = await getDoc(courseRef);
+      const courseData = courseDoc.data();
+      const students = courseData?.students || [];
 
-      // Show success notification for student addition
+      // If student is not already in the course's student array, add them
+      if (!students.includes(studentDoc.id)) {
+        await updateDoc(courseRef, {
+          students: arrayUnion(studentDoc.id), // Adding student ID to the course's students array
+        });
+
+        console.log("Student added to course:", courseId);
+        setNotificationMessage("Student added successfully!");
+        setNotificationSeverity("success");
+      } else {
+        setNotificationMessage("Student is already enrolled in this course.");
+        setNotificationSeverity("info");
+      }
+
+      // Show success notification
       setNotificationOpen(true);
-      setNotificationMessage("Student added successfully!");
-      setNotificationSeverity("success");
-
+      
       // Reset the form fields
       setNewStudent({ firstName: "", lastName: "", studentId: "", email: "" });
 
