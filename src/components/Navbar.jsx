@@ -2,6 +2,8 @@ import React from "react";
 import { AppBar, Toolbar, Box, Button } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { logout } from "../services/authService";
+import LogoutIcon from "@mui/icons-material/Logout";
+import IconButton from "@mui/material/IconButton";
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -48,20 +50,19 @@ const Navbar = () => {
         />
 
         {/* Logout Button */}
-        <Button
-          variant="outlined"
+        <IconButton
           sx={{
             color: "#ffffff",
             borderColor: "rgba(255, 255, 255, 0.8)",
             "&:hover": {
-              borderColor: "#ffffff",
+              color: "#ffffff", // On hover color change
               backgroundColor: "rgba(255, 255, 255, 0.1)",
             },
           }}
           onClick={handleLogout}
         >
-          Logout
-        </Button>
+          <LogoutIcon />
+        </IconButton>
       </Toolbar>
     </AppBar>
   );
