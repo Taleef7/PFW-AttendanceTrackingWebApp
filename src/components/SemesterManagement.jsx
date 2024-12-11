@@ -180,53 +180,56 @@ const SemesterManagement = ({ instructorId }) => {
       {loading ? (
         <Typography>Loading semesters...</Typography>
       ) : semesters.length > 0 ? (
-        <Box
-          sx={{
-            display: "flex",
-            gap: "1rem",
-            flexWrap: "wrap",
-            marginBottom: "1rem",
-          }}
-        >
+        <Box sx={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              fontWeight: "bold",
+              borderBottom: "1px solid #ddd",
+              padding: "0.5rem",
+            }}
+          >
+            <Typography sx={{ flex: 1 }}>Semester Name</Typography>
+            <Typography sx={{ flex: 1 }}>Start Date</Typography>
+            <Typography sx={{ flex: 1 }}>End Date</Typography>
+            <Typography sx={{ flex: 1 }}>Actions</Typography>
+          </Box>
           {semesters.map((semester) => (
-            <Card
+            <Box
               key={semester.id}
               sx={{
-                minWidth: "250px",
-                padding: "1rem",
-                boxShadow: 3,
-                borderRadius: "8px",
-                cursor: "pointer",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                padding: "0.5rem",
+                borderBottom: "1px solid #ddd",
               }}
-              onClick={() => handleNavigateToCourseManagement(semester.id)}
             >
-              <CardContent>
-                <Typography variant="h6">{semester.name}</Typography>
-                <Typography variant="body2">
-                  {semester.startDate} - {semester.endDate}
-                </Typography>
-                <Box sx={{ marginTop: "1rem", display: "flex", gap: "0.5rem" }}>
-                  <IconButton
-                    color="primary"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      openModal(semester);
-                    }}
-                  >
-                    <EditIcon />
-                  </IconButton>
-                  <IconButton
-                    color="error"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleRemoveSemester(semester.id);
-                    }}
-                  >
-                    <DeleteIcon />
-                  </IconButton>
-                </Box>
-              </CardContent>
-            </Card>
+              <Typography sx={{ flex: 1 }}>{semester.name}</Typography>
+              <Typography sx={{ flex: 1 }}>{semester.startDate}</Typography>
+              <Typography sx={{ flex: 1 }}>{semester.endDate}</Typography>
+              <Box sx={{ flex: 1, display: "flex", gap: "0.5rem" }}>
+                <IconButton
+                  color="primary"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    openModal(semester);
+                  }}
+                >
+                  <EditIcon />
+                </IconButton>
+                <IconButton
+                  color="error"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleRemoveSemester(semester.id);
+                  }}
+                >
+                  <DeleteIcon />
+                </IconButton>
+              </Box>
+            </Box>
           ))}
         </Box>
       ) : (
@@ -237,6 +240,7 @@ const SemesterManagement = ({ instructorId }) => {
         variant="contained"
         startIcon={<AddIcon />}
         onClick={() => openModal()}
+        sx={{ marginTop: "1rem" }}
       >
         Add Semester
       </Button>
