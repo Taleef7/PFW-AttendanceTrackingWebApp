@@ -16,8 +16,6 @@ import {
   Button,
   Modal,
   TextField,
-  Card,
-  CardContent,
   IconButton,
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
@@ -46,7 +44,7 @@ const SemesterManagement = ({ instructorId }) => {
       try {
         const q = query(
           collection(db, "semesters"),
-          where("instructor", "==", `/instructors/${instructorId}`)
+          where("instructor", "==", `${localStorage.getItem('uid')}`)
         );
         const querySnapshot = await getDocs(q);
         const fetchedSemesters = querySnapshot.docs.map((doc) => ({
@@ -133,12 +131,12 @@ const SemesterManagement = ({ instructorId }) => {
                 ? { ...semester, ...newSemester }
                 : semester
             )
-            .sort((a, b) => new Date(a.startDate) - new Date(b.startDate)) // Resort after update
+            .sort((a, b) => new Date(a.startDate) - new Date(b.startDate))
         );
       } else {
         const docRef = await addDoc(collection(db, "semesters"), {
           ...newSemester,
-          instructor: `/instructors/${instructorId}`,
+          instructor: `${localStorage.getItem('uid')}`,
         });
         setSemesters((prev) =>
           [...prev, { id: docRef.id, ...newSemester, instructor: `/instructors/${instructorId}` }].sort(
@@ -168,6 +166,7 @@ const SemesterManagement = ({ instructorId }) => {
   };
 
   const handleNavigateToCourseManagement = (semesterId) => {
+    localStorage.setItem("selectedSemesterId", semesterId);
     navigate(`/course-management/${semesterId}`);
   };
 
@@ -206,7 +205,12 @@ const SemesterManagement = ({ instructorId }) => {
                 borderBottom: "1px solid #ddd",
               }}
             >
-              <Typography sx={{ flex: 1 }}>{semester.name}</Typography>
+              <Typography
+                sx={{ flex: 1, cursor: "pointer", color: "primary.main" }}
+                onClick={() => handleNavigateToCourseManagement(semester.id)}
+              >
+                {semester.name}
+              </Typography>
               <Typography sx={{ flex: 1 }}>{semester.startDate}</Typography>
               <Typography sx={{ flex: 1 }}>{semester.endDate}</Typography>
               <Box sx={{ flex: 1, display: "flex", gap: "0.5rem" }}>

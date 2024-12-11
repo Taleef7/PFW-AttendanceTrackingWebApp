@@ -22,6 +22,7 @@ export const login = async (email, password) => {
       throw new Error("Please verify your email before logging in.");
     }
 
+    localStorage.setItem('uid', auth.currentUser?.uid)
     return user;
   } catch (error) {
     console.log(error);
@@ -39,6 +40,7 @@ export const logout = () => {
   const auth = getAuth();
   signOut(auth)
     .then(() => {
+      localStorage.clear();
       console.log("User logged out");
     })
     .catch((error) => {
