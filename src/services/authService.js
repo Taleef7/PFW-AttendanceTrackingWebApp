@@ -5,7 +5,6 @@ export const signup = async (email, password) => {
   try {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
-
     await sendEmailVerification(user);
     console.log("Verification email sent!");
   } catch (error) {
@@ -25,8 +24,9 @@ export const login = async (email, password) => {
 
     return user;
   } catch (error) {
-    if (error.code === "auth/wrong-password") {
-      throw new Error("Incorrect password. Please try again.");
+    console.log(error);
+    if (error.code === "auth/invalid-credential") {
+      throw new Error("Invalid Credentails");
     } else if (error.code === "auth/user-not-found") {
       throw new Error("No user found with this email.");
     } else {
