@@ -12,6 +12,8 @@ import SpecificCourseDashboard from './pages/courseDashboard'; // Specific Cours
 import ScanQR from './pages/scanQR';
 import StudentList from './components/StudentList';
 import StudentReport from './components/StudentReport';
+import GenerateReport from './components/GenerateReport';
+import Analytics from './components/Analytics';
 
 function App() {
   return (
@@ -35,6 +37,8 @@ function App() {
         <Route path="/course-dashboard/:courseId" element={<SpecificCourseDashboard />} />
         <Route path="/student-list/:courseId" element={<StudentList />} />
         <Route path="/student-report/:courseId" element={ <StudentReport />} />
+        <Route path="/generate-report/:courseId" element= {<GenerateReport/>} />
+        <Route path="/analytics/:courseId" element= {<Analytics />} />
  
         {/* Scan QR */}
         <Route path="/scan-qr/:courseName" element={<ScanQR />} />
