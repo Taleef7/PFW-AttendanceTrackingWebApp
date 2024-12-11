@@ -167,7 +167,6 @@ const SemesterManagement = () => {
   };
 
   const handleNavigateToCourseManagement = (semesterId) => {
-    localStorage.setItem("selectedSemesterId", semesterId);
     navigate(`/course-management/${semesterId}`);
   };
 

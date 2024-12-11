@@ -14,17 +14,28 @@ import {
 import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
-import { collection, addDoc, getDocs, deleteDoc, doc, updateDoc } from "firebase/firestore";
+import {
+  collection,
+  addDoc,
+  getDocs,
+  deleteDoc,
+  doc,
+  updateDoc,
+  query,
+  where,
+} from "firebase/firestore";
 import { db } from "../services/firebaseConfig";
-import { useNavigate } from "react-router-dom"; // For navigation
+import { useNavigate, useParams } from "react-router-dom";
 
 const CourseManagementPage = () => {
+  const { semesterId } = useParams();
+  const instructorId = localStorage.getItem("uid");
   const [courses, setCourses] = useState([]);
   const [courseForm, setCourseForm] = useState({
     ID: "",
     name: "",
-    instructor: "/instructors/instructor1",
-    semester: "/semesters/semester1",
+    instructor: instructorId,
+    semester: semesterId,
     students: [],
     totalClasses: 0,
   });
@@ -32,18 +43,29 @@ const CourseManagementPage = () => {
   const [showForm, setShowForm] = useState(false);
   const [error, setError] = useState("");
 
-  const navigate = useNavigate(); // Initialize navigation
+  const navigate = useNavigate();
 
   const fetchCourses = async () => {
-    const coursesCollection = collection(db, "courses");
-    const coursesSnapshot = await getDocs(coursesCollection);
-    const coursesList = coursesSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-    setCourses(coursesList);
+    try {
+      const coursesQuery = query(
+        collection(db, "courses"),
+        where("semester", "==", semesterId),
+        where("instructor", "==", instructorId)
+      );
+      const coursesSnapshot = await getDocs(coursesQuery);
+      const coursesList = coursesSnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setCourses(coursesList);
+    } catch (error) {
+      console.error("Error fetching courses:", error);
+    }
   };
 
   useEffect(() => {
     fetchCourses();
-  }, []);
+  }, [semesterId, instructorId]);
 
   const validateForm = (course) => {
     if (!course.ID.trim() || !course.name.trim()) {
@@ -70,7 +92,7 @@ const CourseManagementPage = () => {
       fetchCourses();
       handleCloseForm();
     } catch (error) {
-      console.error("Error saving course: ", error);
+      console.error("Error saving course:", error);
     }
   };
 
@@ -80,7 +102,7 @@ const CourseManagementPage = () => {
       alert("Course deleted successfully!");
       fetchCourses();
     } catch (error) {
-      console.error("Error deleting course: ", error);
+      console.error("Error deleting course:", error);
     }
   };
 
@@ -92,8 +114,8 @@ const CourseManagementPage = () => {
       setCourseForm({
         ID: "",
         name: "",
-        instructor: "/instructors/instructor1",
-        semester: "/semesters/semester1",
+        instructor: instructorId,
+        semester: semesterId,
         students: [],
         totalClasses: 0,
       });
@@ -108,7 +130,6 @@ const CourseManagementPage = () => {
     setCourseToEdit(null);
   };
 
-  // Navigate to Course Dashboard
   const handleNavigateToCourse = (courseName) => {
     navigate(`/course-dashboard/${courseName}`);
   };
@@ -122,7 +143,7 @@ const CourseManagementPage = () => {
       }}
     >
       <Typography variant="h4" sx={{ marginBottom: "2rem" }}>
-        Course Management
+        Courses for Semester {semesterId}
       </Typography>
 
       {/* Courses List */}
@@ -150,7 +171,7 @@ const CourseManagementPage = () => {
                 boxShadow: 6,
               },
             }}
-            onClick={() => handleNavigateToCourse(course.name)} // Navigate on card click
+            onClick={() => handleNavigateToCourse(course.name)}
           >
             <CardContent>
               <Box
@@ -162,22 +183,20 @@ const CourseManagementPage = () => {
               >
                 <Typography variant="h6">{course.name}</Typography>
                 <Box>
-                  {/* Edit Button */}
                   <IconButton
                     color="primary"
                     onClick={(e) => {
-                      e.stopPropagation(); // Prevent card click
+                      e.stopPropagation();
                       handleShowForm(course);
                     }}
                     sx={{ marginRight: 1 }}
                   >
                     <EditIcon />
                   </IconButton>
-                  {/* Delete Button */}
                   <IconButton
                     color="error"
                     onClick={(e) => {
-                      e.stopPropagation(); // Prevent card click
+                      e.stopPropagation();
                       handleDeleteCourse(course.id);
                     }}
                   >
@@ -246,24 +265,6 @@ const CourseManagementPage = () => {
             label="Course Name"
             value={courseForm.name}
             onChange={(e) => setCourseForm({ ...courseForm, name: e.target.value })}
-            sx={{ marginBottom: "1rem" }}
-          />
-          <TextField
-            fullWidth
-            label="Instructor Reference"
-            value={courseForm.instructor}
-            onChange={(e) =>
-              setCourseForm({ ...courseForm, instructor: e.target.value })
-            }
-            sx={{ marginBottom: "1rem" }}
-          />
-          <TextField
-            fullWidth
-            label="Semester Reference"
-            value={courseForm.semester}
-            onChange={(e) =>
-              setCourseForm({ ...courseForm, semester: e.target.value })
-            }
             sx={{ marginBottom: "1rem" }}
           />
           <TextField
