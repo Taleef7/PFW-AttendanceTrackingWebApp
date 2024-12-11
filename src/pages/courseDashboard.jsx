@@ -11,6 +11,8 @@ import {
   Snackbar,
   Alert,
 } from "@mui/material";
+import { getFirestore, collection, query, where, getDocs, addDoc, doc, updateDoc, arrayUnion } from "firebase/firestore";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import QrCodeScannerIcon from "@mui/icons-material/QrCodeScanner";
 import SendIcon from "@mui/icons-material/Send";
 import ListAltIcon from "@mui/icons-material/ListAlt";
@@ -18,7 +20,7 @@ import FileDownloadIcon from "@mui/icons-material/FileDownload";
 import BarChartIcon from "@mui/icons-material/BarChart";
 import DescriptionIcon from "@mui/icons-material/Description";
 import NoteAddIcon from "@mui/icons-material/NoteAdd";
-import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { db } from "../services/firebaseConfig"; // Import your Firebase initialization
 
 const CourseDashboard = () => {
   const { courseId } = useParams();
@@ -33,6 +35,9 @@ const CourseDashboard = () => {
   });
   const [courseData, setCourseData] = useState(null); // Dynamic course data
   const [notificationOpen, setNotificationOpen] = useState(false); // Snackbar state
+  const [notificationMessage, setNotificationMessage] = useState(""); // Message for notification
+  const [notificationSeverity, setNotificationSeverity] = useState("success"); // Success or error severity
+  const [formSubmitted, setFormSubmitted] = useState(false); // New state to track if the form is submitted
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -49,7 +54,7 @@ const CourseDashboard = () => {
           {
             label: "Send QR Codes",
             icon: <SendIcon />,
-            onClick: () => setNotificationOpen(true), // Trigger notification
+            onClick: handleQrCodeSent, // Trigger QR code sent notification
           },
           { label: "Student List", icon: <ListAltIcon />, path: `/student-list/${semesterId}` },
           { label: "Import Class List", icon: <FileDownloadIcon />, path: `/import-class/${semesterId}` },
@@ -68,12 +73,74 @@ const CourseDashboard = () => {
   const openAddStudentModal = () => setIsAddStudentOpen(true);
   const closeAddStudentModal = () => {
     setIsAddStudentOpen(false);
+    setFormSubmitted(false); // Reset the form submitted state when closing
     setNewStudent({ firstName: "", lastName: "", studentId: "", email: "" });
   };
 
-  const handleAddStudent = () => {
-    console.log("New Student Data:", newStudent);
-    closeAddStudentModal();
+  const handleAddStudent = async (courseId) => {  
+    // Validate only after form is submitted
+    setFormSubmitted(true);
+
+    // Check if fields are empty
+    if (!newStudent.firstName || !newStudent.lastName || !newStudent.studentId || !newStudent.email) {
+      alert("Please fill in all fields. None of the fields can be empty.");
+      return; // Exit the function if validation fails
+    }
+
+    try {
+      // 1. Check if student exists in the student table by studentId
+      const studentRef = collection(db, "students");
+      const q = query(studentRef, where("studentId", "==", newStudent.studentId));
+      const studentSnapshot = await getDocs(q);
+  
+      let studentDoc;
+      if (!studentSnapshot.empty) {
+        // Student exists
+        studentDoc = studentSnapshot.docs[0]; // Get the student document
+        console.log("Student found:", studentDoc.data());
+      } else {
+        // Student does not exist, create a new student document
+        studentDoc = await addDoc(studentRef, {
+          firstName: newStudent.firstName,
+          lastName: newStudent.lastName,
+          studentId: newStudent.studentId,
+          email: newStudent.email,
+        });
+        console.log("New student added:", studentDoc.id);
+      }
+  
+      // 2. Now add the student to the specific course's student array
+      const courseRef = doc(db, "courses", courseId); // Ensure you're referencing the correct course document
+      await updateDoc(courseRef, {
+        students: arrayUnion(studentDoc.id), // Adding student ID to the course's students array
+      });
+  
+      console.log("Student added to course:", courseId);
+
+      // Show success notification for student addition
+      setNotificationOpen(true);
+      setNotificationMessage("Student added successfully!");
+      setNotificationSeverity("success");
+
+      // Reset the form fields
+      setNewStudent({ firstName: "", lastName: "", studentId: "", email: "" });
+
+      // Close the modal
+      closeAddStudentModal();
+    } catch (error) {
+      console.error("Error adding student to course:", error);
+      // Show error notification for student addition
+      setNotificationOpen(true);
+      setNotificationMessage("Error adding student to course.");
+      setNotificationSeverity("error");
+    }
+  };
+
+  // Handle QR Code sent alert
+  const handleQrCodeSent = () => {
+    setNotificationOpen(true);
+    setNotificationMessage("QR Codes Sent Successfully!");
+    setNotificationSeverity("success");
   };
 
   const handleActionClick = (path) => {
@@ -97,7 +164,7 @@ const CourseDashboard = () => {
     >
       {/* Header */}
       <Typography variant="h4" component="h1" sx={{ marginBottom: "1.5rem" }}>
-       {semesterName} - {courseName || "Course Dashboard"}
+        {semesterName} - {courseName || "Course Dashboard"}
       </Typography>
 
       {/* Action Grid */}
@@ -217,7 +284,7 @@ const CourseDashboard = () => {
             color="primary"
             fullWidth
             sx={{ marginBottom: "1rem" }}
-            onClick={handleAddStudent}
+            onClick={() => handleAddStudent(courseId)} // Passing courseId as parameter
           >
             Add Student
           </Button>
@@ -241,10 +308,10 @@ const CourseDashboard = () => {
       >
         <Alert
           onClose={handleCloseNotification}
-          severity="success"
+          severity={notificationSeverity}  // Success or error severity
           sx={{ width: "100%" }}
         >
-          QR Codes Sent Successfully!
+          {notificationMessage}  {/* Dynamic message content */}
         </Alert>
       </Snackbar>
     </Box>

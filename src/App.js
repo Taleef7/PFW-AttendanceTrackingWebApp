@@ -30,7 +30,7 @@ function App() {
         <Route path="/coursedashboard" element={<CourseDashboard />} />
 
         {/* Specific Course Dashboard */}
-        <Route path="/course-dashboard/:courseName" element={<SpecificCourseDashboard />} />
+        <Route path="/course-dashboard/:courseId" element={<SpecificCourseDashboard />} />
 
         {/* Scan QR */}
         <Route path="/scan-qr/:courseName" element={<ScanQR />} />
