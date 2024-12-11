@@ -25,10 +25,12 @@ import {
   where,
 } from "firebase/firestore";
 import { db } from "../services/firebaseConfig";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 
 const CourseManagementPage = () => {
   const { semesterId } = useParams();
+  const location = useLocation();
+  const { semesterName } = location.state || {};
   const instructorId = localStorage.getItem("uid");
   const [courses, setCourses] = useState([]);
   const [courseForm, setCourseForm] = useState({
@@ -130,8 +132,8 @@ const CourseManagementPage = () => {
     setCourseToEdit(null);
   };
 
-  const handleNavigateToCourse = (courseName) => {
-    navigate(`/course-dashboard/${courseName}`);
+  const handleNavigateToCourse = (courseId, courseName, semesterId, semesterName) => {
+    navigate(`/course-dashboard/${courseId}`,  { state: { semesterId: semesterId, courseName: courseName, semesterName: semesterName }});
   };
 
   return (
@@ -143,7 +145,7 @@ const CourseManagementPage = () => {
       }}
     >
       <Typography variant="h4" sx={{ marginBottom: "2rem" }}>
-        Courses for Semester {semesterId}
+        Courses for Semester {semesterName}
       </Typography>
 
       {/* Courses List */}
@@ -171,7 +173,7 @@ const CourseManagementPage = () => {
                 boxShadow: 6,
               },
             }}
-            onClick={() => handleNavigateToCourse(course.name)}
+            onClick={() => handleNavigateToCourse(course.id, course.name, semesterId, semesterName)}
           >
             <CardContent>
               <Box

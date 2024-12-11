@@ -18,10 +18,12 @@ import FileDownloadIcon from "@mui/icons-material/FileDownload";
 import BarChartIcon from "@mui/icons-material/BarChart";
 import DescriptionIcon from "@mui/icons-material/Description";
 import NoteAddIcon from "@mui/icons-material/NoteAdd";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 
 const CourseDashboard = () => {
-  const { courseName, semesterId } = useParams(); // Retrieve courseName or semesterId dynamically
+  const { courseId } = useParams();
+  const location = useLocation();
+  const { semesterId, semesterName, courseName } = location.state || {};
   const [isAddStudentOpen, setIsAddStudentOpen] = useState(false);
   const [newStudent, setNewStudent] = useState({
     firstName: "",
@@ -34,7 +36,7 @@ const CourseDashboard = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const resolvedName = courseName || `Semester-${semesterId || "Unknown"}`; // Resolve missing name or ID
+    const resolvedName = courseId || `Semester-${semesterName}`; // Resolve missing name or ID
     const fetchCourseData = async () => {
       const fetchedData = {
         name: resolvedName,
@@ -42,7 +44,7 @@ const CourseDashboard = () => {
           {
             label: "Scan QR",
             icon: <QrCodeScannerIcon />,
-            path: `/scan-qr/${courseName || semesterId}`, // Dynamically resolve name or ID
+            path: `/scan-qr/${courseId || semesterId}`, // Dynamically resolve name or ID
           },
           {
             label: "Send QR Codes",
@@ -61,7 +63,7 @@ const CourseDashboard = () => {
     };
 
     fetchCourseData();
-  }, [courseName, semesterId]);
+  }, [courseId, semesterId]);
 
   const openAddStudentModal = () => setIsAddStudentOpen(true);
   const closeAddStudentModal = () => {
@@ -95,7 +97,7 @@ const CourseDashboard = () => {
     >
       {/* Header */}
       <Typography variant="h4" component="h1" sx={{ marginBottom: "1.5rem" }}>
-        {courseData.name || "Course Dashboard"}
+       {semesterName} - {courseName || "Course Dashboard"}
       </Typography>
 
       {/* Action Grid */}

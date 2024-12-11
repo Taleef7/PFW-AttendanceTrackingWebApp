@@ -166,8 +166,8 @@ const SemesterManagement = () => {
     }
   };
 
-  const handleNavigateToCourseManagement = (semesterId) => {
-    navigate(`/course-management/${semesterId}`);
+  const handleNavigateToCourseManagement = (semesterId, semesterName) => {
+    navigate(`/course-management/${semesterId}`,  { state: { semesterName: semesterName}});
   };
 
   return (
@@ -207,7 +207,7 @@ const SemesterManagement = () => {
             >
               <Typography
                 sx={{ flex: 1, cursor: "pointer", color: "primary.main" }}
-                onClick={() => handleNavigateToCourseManagement(semester.id)}
+                onClick={() => handleNavigateToCourseManagement(semester.id, semester.name)}
               >
                 {semester.name}
               </Typography>
