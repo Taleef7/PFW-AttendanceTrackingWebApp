@@ -1,16 +1,25 @@
 import React from "react";
-import { AppBar, Toolbar, Box, IconButton, Tooltip } from "@mui/material";
-import ExitToAppIcon from "@mui/icons-material/ExitToApp"; // Door icon for logout
+import { AppBar, Toolbar, Box, Button } from "@mui/material";
 import { useNavigate } from "react-router-dom";
+import { logout } from "../services/authService";
 
-const Navbar = ({ onLogout }) => {
+const Navbar = () => {
   const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate("/login");
+    } catch (error) {
+      console.error("Error during logout:", error.message);
+    }
+  };
 
   return (
     <AppBar
       position="static"
       sx={{
-        backgroundColor: "#000000", // Black background
+        backgroundColor: "#000000",
         color: "#ffffff",
         boxShadow: "none",
         borderBottom: "1px solid rgba(255, 255, 255, 0.2)",
@@ -23,35 +32,36 @@ const Navbar = ({ onLogout }) => {
           alignItems: "center",
         }}
       >
-        {/* New Logo */}
+        {/* PFW Logo */}
         <Box
           component="img"
-          src="/LogoDash.png" // Updated logo path
-          alt="Dashboard Logo"
+          src="/LogoDash.png" // Relative path in the public folder
+          alt="PFW Logo"
           sx={{
             height: "40px",
             cursor: "pointer",
-            backgroundColor: "#000000", // Black background specifically behind the logo
+            backgroundColor: "#000000",
             padding: "0.5rem",
             borderRadius: "4px",
           }}
-          onClick={() => navigate("/dashboard")} // Redirect to dashboard on click
+          onClick={() => navigate("/dashboard")}
         />
 
-        {/* Logout Icon with Tooltip */}
-        <Tooltip title="Logout">
-          <IconButton
-            color="inherit"
-            onClick={onLogout}
-            sx={{
-              "&:hover": {
-                color: "rgba(255, 255, 255, 0.8)",
-              },
-            }}
-          >
-            <ExitToAppIcon fontSize="large" />
-          </IconButton>
-        </Tooltip>
+        {/* Logout Button */}
+        <Button
+          variant="outlined"
+          sx={{
+            color: "#ffffff",
+            borderColor: "rgba(255, 255, 255, 0.8)",
+            "&:hover": {
+              borderColor: "#ffffff",
+              backgroundColor: "rgba(255, 255, 255, 0.1)",
+            },
+          }}
+          onClick={handleLogout}
+        >
+          Logout
+        </Button>
       </Toolbar>
     </AppBar>
   );
