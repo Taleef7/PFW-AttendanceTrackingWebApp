@@ -10,7 +10,9 @@ import {
   Button,
   Snackbar,
   Alert,
+  IconButton,
 } from "@mui/material";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import {
   collection,
   query,
@@ -30,8 +32,8 @@ import FileDownloadIcon from "@mui/icons-material/FileDownload";
 import BarChartIcon from "@mui/icons-material/BarChart";
 import DescriptionIcon from "@mui/icons-material/Description";
 import NoteAddIcon from "@mui/icons-material/NoteAdd";
-import { db } from "../services/firebaseConfig"; // Import your Firebase initialization
-import { generateQRCodeForStudent } from "../utils/qrCodeUtils"; // ✅ Import the QR code utility
+import { db } from "../services/firebaseConfig";
+import { generateQRCodeForStudent } from "../utils/qrCodeUtils";
 
 const CourseDashboard = () => {
   const { courseId } = useParams();
@@ -44,14 +46,14 @@ const CourseDashboard = () => {
     studentId: "",
     email: "",
   });
-  const [courseData, setCourseData] = useState(null); // Dynamic course data
-  const [notificationOpen, setNotificationOpen] = useState(false); // Snackbar state
-  const [notificationMessage, setNotificationMessage] = useState(""); // Message for notification
-  const [notificationSeverity, setNotificationSeverity] = useState("success"); // Success or error severity
+  const [courseData, setCourseData] = useState(null);
+  const [notificationOpen, setNotificationOpen] = useState(false);
+  const [notificationMessage, setNotificationMessage] = useState("");
+  const [notificationSeverity, setNotificationSeverity] = useState("success");
   const navigate = useNavigate();
 
   useEffect(() => {
-    const resolvedName = courseId || `Semester-${semesterName}`; // Resolve missing name or ID
+    const resolvedName = courseId || `Semester-${semesterName}`;
     const fetchCourseData = async () => {
       const fetchedData = {
         name: resolvedName,
@@ -59,12 +61,12 @@ const CourseDashboard = () => {
           {
             label: "Scan QR",
             icon: <QrCodeScannerIcon />,
-            path: `/scan-qr/${courseId || semesterId}`, // Dynamically resolve name or ID
+            path: `/scan-qr/${courseId || semesterId}`,
           },
           {
             label: "Send QR Codes",
             icon: <SendIcon />,
-            onClick: handleQrCodeSent, // Trigger QR code sent notification
+            onClick: handleQrCodeSent,
           },
           { label: "Student List", icon: <ListAltIcon />, path: `/student-list/${courseId}` },
           { label: "Import Class List", icon: <FileDownloadIcon />, path: `/import-class/${courseId}` },
@@ -86,26 +88,21 @@ const CourseDashboard = () => {
   };
 
   const handleAddStudent = async (courseId) => {
-    // Check if fields are empty
     if (!newStudent.firstName || !newStudent.lastName || !newStudent.studentId || !newStudent.email) {
       alert("Please fill in all fields. None of the fields can be empty.");
-      return; // Exit the function if validation fails
+      return;
     }
 
     try {
-      // 1. Check if student exists in the student table by email (using email for unique identification)
       const studentRef = collection(db, "students");
       const q = query(studentRef, where("email", "==", newStudent.email));
       const studentSnapshot = await getDocs(q);
 
       let studentDocId;
       if (!studentSnapshot.empty) {
-        // Student exists
         const studentDoc = studentSnapshot.docs[0];
         studentDocId = studentDoc.id;
-        console.log("Student found:", studentDoc.data());
       } else {
-        // 2. Generate a QR Code for the student ✅
         const qrCode = await generateQRCodeForStudent(
           {
             id: newStudent.studentId,
@@ -114,31 +111,25 @@ const CourseDashboard = () => {
           courseId
         );
 
-        // 3. Student does not exist, create a new student document
         const studentDoc = await addDoc(studentRef, {
           firstName: newStudent.firstName,
           lastName: newStudent.lastName,
           studentId: newStudent.studentId,
           email: newStudent.email,
-          qrCode, // ✅ Add QR Code field
+          qrCode,
         });
         studentDocId = studentDoc.id;
-        console.log("New student added:", studentDocId);
       }
 
-      // 4. Check if the student is already in the course's student array
       const courseRef = doc(db, "courses", courseId);
       const courseDoc = await getDoc(courseRef);
       const courseData = courseDoc.data();
       const students = courseData?.students || [];
 
-      // If student is not already in the course's student array, add them
       if (!students.includes(studentDocId)) {
         await updateDoc(courseRef, {
           students: arrayUnion(studentDocId),
         });
-
-        console.log("Student added to course:", courseId);
         setNotificationMessage("Student added successfully!");
         setNotificationSeverity("success");
       } else {
@@ -146,32 +137,24 @@ const CourseDashboard = () => {
         setNotificationSeverity("info");
       }
 
-      // Show success notification
       setNotificationOpen(true);
-
-      // Reset the form fields
       setNewStudent({ firstName: "", lastName: "", studentId: "", email: "" });
-
-      // Close the modal
       closeAddStudentModal();
     } catch (error) {
-      console.error("Error adding student to course:", error);
-      // Show error notification for student addition
       setNotificationOpen(true);
       setNotificationMessage("Error adding student to course.");
       setNotificationSeverity("error");
     }
   };
 
-  // Handle QR Code sent alert
   const handleQrCodeSent = () => {
     setNotificationOpen(true);
     setNotificationMessage("QR Codes Sent Successfully!");
     setNotificationSeverity("success");
   };
 
-  const handleActionClick = (path, courseName) => {
-    navigate(path, { state: { courseName: courseName } });
+  const handleActionClick = (path) => {
+    navigate(path);
   };
 
   const handleCloseNotification = () => {
@@ -189,10 +172,31 @@ const CourseDashboard = () => {
         padding: "1rem",
       }}
     >
-      {/* Header */}
-      <Typography variant="h4" component="h1" sx={{ marginBottom: "1.5rem" }}>
-        {semesterName} - {courseName || "Course Dashboard"}
-      </Typography>
+      {/* Header with Back Button */}
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: "1.5rem",
+        }}
+      >
+        <IconButton
+          onClick={() => navigate(-1)}
+          sx={{
+            backgroundColor: "#f5f5f5",
+            "&:hover": {
+              backgroundColor: "#e0e0e0",
+            },
+          }}
+        >
+          <ArrowBackIcon />
+        </IconButton>
+        <Typography variant="h4">
+          {semesterName} - {courseName || "Course Dashboard"}
+        </Typography>
+        <Box sx={{ width: "48px" }} /> {/* Spacer to balance the layout */}
+      </Box>
 
       {/* Action Grid */}
       <Grid container spacing={3}>
@@ -212,7 +216,9 @@ const CourseDashboard = () => {
                   cursor: "pointer",
                 },
               }}
-              onClick={() => (action.onClick ? action.onClick() : handleActionClick(action.path, courseName))}
+              onClick={() =>
+                action.onClick ? action.onClick() : handleActionClick(action.path)
+              }
             >
               <CardContent
                 sx={{
@@ -303,7 +309,7 @@ const CourseDashboard = () => {
             color="primary"
             fullWidth
             sx={{ marginBottom: "1rem" }}
-            onClick={() => handleAddStudent(courseId)} // Passing courseId as parameter
+            onClick={() => handleAddStudent(courseId)}
           >
             Add Student
           </Button>
@@ -327,10 +333,10 @@ const CourseDashboard = () => {
       >
         <Alert
           onClose={handleCloseNotification}
-          severity={notificationSeverity} // Success or error severity
+          severity={notificationSeverity}
           sx={{ width: "100%" }}
         >
-          {notificationMessage} {/* Dynamic message content */}
+          {notificationMessage}
         </Alert>
       </Snackbar>
     </Box>

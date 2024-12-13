@@ -7,13 +7,16 @@ import {
   Button,
   Card,
   CardContent,
+  IconButton,
 } from "@mui/material";
+import { ArrowBack } from "@mui/icons-material";
 import { collection, doc, getDoc, query, where, getDocs } from "firebase/firestore";
 import { db } from "../services/firebaseConfig";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 
 const StudentReport = () => {
   const { courseId } = useParams(); // Retrieve courseId from URL params
+  const navigate = useNavigate(); // Navigation hook
   const [students, setStudents] = useState([]);
   const [selectedStudent, setSelectedStudent] = useState("");
   const [reportData, setReportData] = useState(null);
@@ -93,28 +96,48 @@ const StudentReport = () => {
   };
 
   return (
-    <Box sx={{ maxWidth: "80%", margin: "2rem auto", textAlign: "center" }}>
-      <Typography variant="h4" sx={{ marginBottom: "1.5rem" }}>
+    <Box sx={{ maxWidth: "80%", margin: "2rem auto" }}>
+      {/* Back Button */}
+      <Box sx={{ textAlign: "left", marginBottom: "1rem" }}>
+        <IconButton
+          onClick={() => navigate(-1)} // Navigate back to the previous page
+          sx={{
+            color: "#000", // Black color for the button
+          }}
+        >
+          <ArrowBack /> {/* Back arrow icon */}
+        </IconButton>
+      </Box>
+
+      {/* Header */}
+      <Typography variant="h4" sx={{ textAlign: "center", marginBottom: "2rem" }}>
         Student Report
       </Typography>
 
-      {/* Dropdown for student selection */}
-      <TextField
-        select
-        label="Select Student"
-        value={selectedStudent}
-        onChange={(e) => setSelectedStudent(e.target.value)}
-        sx={{ width: "300px", marginBottom: "1.5rem" }}
+      {/* Dropdown and Search Button */}
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap: "1.5rem",
+          marginBottom: "2rem",
+        }}
       >
-        {students.map((student) => (
-          <MenuItem key={student.id} value={student.id}>
-            {student.firstName} {student.lastName}
-          </MenuItem>
-        ))}
-      </TextField>
+        <TextField
+          select
+          label="Select Student"
+          value={selectedStudent}
+          onChange={(e) => setSelectedStudent(e.target.value)}
+          sx={{ width: "300px" }}
+        >
+          {students.map((student) => (
+            <MenuItem key={student.id} value={student.id}>
+              {student.firstName} {student.lastName}
+            </MenuItem>
+          ))}
+        </TextField>
 
-      {/* Search button */}
-      <Box sx={{ marginBottom: "2rem" }}>
         <Button
           variant="contained"
           color="primary"

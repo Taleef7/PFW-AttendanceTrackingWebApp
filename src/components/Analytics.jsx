@@ -1,12 +1,9 @@
 import React, { useState, useEffect } from "react";
-import {
-  Box,
-  Typography,
-  CircularProgress,
-} from "@mui/material";
+import { Box, Typography, CircularProgress, IconButton } from "@mui/material";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { collection, doc, getDoc, query, where, getDocs } from "firebase/firestore";
 import { db } from "../services/firebaseConfig";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { Bar } from "react-chartjs-2";
 import { Chart as ChartJS, BarElement, CategoryScale, LinearScale, Tooltip, Legend } from "chart.js";
 
@@ -14,6 +11,7 @@ ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend);
 
 const Analytics = () => {
   const { courseId } = useParams();
+  const navigate = useNavigate();
   const [attendanceData, setAttendanceData] = useState({});
   const [loading, setLoading] = useState(true);
 
@@ -120,10 +118,26 @@ const Analytics = () => {
   };
 
   return (
-    <Box sx={{ maxWidth: "80%", margin: "2rem auto", textAlign: "center" }}>
+    <Box sx={{ maxWidth: "80%", margin: "2rem auto", textAlign: "center", position: "relative" }}>
+      {/* Back Button */}
+      <IconButton
+        sx={{
+          position: "absolute",
+          top: "0",
+          left: "-2rem",
+          transform: "translateY(-50%)",
+        }}
+        onClick={() => navigate(-1)}
+      >
+        <ArrowBackIcon />
+      </IconButton>
+
+      {/* Header */}
       <Typography variant="h4" sx={{ marginBottom: "2rem" }}>
         Attendance Analytics
       </Typography>
+
+      {/* Bar Chart */}
       <Bar data={data} options={options} />
     </Box>
   );
