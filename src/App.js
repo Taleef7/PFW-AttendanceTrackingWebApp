@@ -12,20 +12,21 @@ import StudentList from "./components/StudentList";
 import StudentReport from "./components/StudentReport";
 import GenerateReport from "./components/GenerateReport";
 import Analytics from "./components/Analytics";
-import Navbar from "./components/Navbar"; // New Navbar component
+import Navbar from "./components/Navbar"; // Navbar component
+import Footer from "./components/Footer"; // Footer component
 import "./App.css";
 import "./../src/styles/styles.css";
 
 const AppRoutes = () => {
   const location = useLocation();
 
-  // Define routes where Navbar should not be displayed
-  const noNavbarRoutes = ["/login", "/register", "/forgot-password"];
+  // Define routes where Navbar and Footer should not be displayed
+  const noNavbarFooterRoutes = ["/login", "/register", "/forgot-password"];
 
   return (
     <>
       {/* Conditionally render Navbar */}
-      {!noNavbarRoutes.includes(location.pathname) && <Navbar />}
+      {!noNavbarFooterRoutes.includes(location.pathname) && <Navbar />}
 
       <Routes>
         {/* Authentication Routes */}
@@ -49,9 +50,12 @@ const AppRoutes = () => {
         {/* Scan QR */}
         <Route path="/scan-qr/:courseName" element={<ScanQR />} />
 
-        {/* Fallback for undefined routes */}
-        <Route path="*" element={<Navigate to="/login" />} />
+        {/* Fallback for undefined routes
+        <Route path="*" element={<Navigate to="/login" />} /> */}
       </Routes>
+
+      {/* Conditionally render Footer */}
+      {!noNavbarFooterRoutes.includes(location.pathname) && <Footer />}
     </>
   );
 };
