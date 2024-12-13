@@ -10,10 +10,13 @@ import {
   Alert,
   Divider,
   Button,
+  AppBar,
+  Toolbar,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import {
   collection,
   addDoc,
@@ -133,7 +136,9 @@ const CourseManagementPage = () => {
   };
 
   const handleNavigateToCourse = (courseId, courseName, semesterId, semesterName) => {
-    navigate(`/course-dashboard/${courseId}`,  { state: { semesterId: semesterId, courseName: courseName, semesterName: semesterName }});
+    navigate(`/course-dashboard/${courseId}`, {
+      state: { semesterId: semesterId, courseName: courseName, semesterName: semesterName },
+    });
   };
 
   return (
@@ -144,6 +149,20 @@ const CourseManagementPage = () => {
         textAlign: "center",
       }}
     >
+      {/* Back Button */}
+      <Box sx={{ display: "flex", alignItems: "center", marginBottom: "1rem" }}>
+        <IconButton
+          edge="start"
+          color="primary"
+          onClick={() => navigate("/dashboard")}
+          sx={{ marginRight: "1rem" }}
+        >
+          <ArrowBackIcon />
+        </IconButton>
+        <Typography variant="h5"></Typography>
+      </Box>
+
+      {/* Title */}
       <Typography variant="h4" sx={{ marginBottom: "2rem" }}>
         Courses for Semester {semesterName}
       </Typography>
@@ -173,7 +192,9 @@ const CourseManagementPage = () => {
                 boxShadow: 6,
               },
             }}
-            onClick={() => handleNavigateToCourse(course.id, course.name, semesterId, semesterName)}
+            onClick={() =>
+              handleNavigateToCourse(course.id, course.name, semesterId, semesterName)
+            }
           >
             <CardContent>
               <Box
@@ -259,14 +280,18 @@ const CourseManagementPage = () => {
             fullWidth
             label="Course ID"
             value={courseForm.ID}
-            onChange={(e) => setCourseForm({ ...courseForm, ID: e.target.value })}
+            onChange={(e) =>
+              setCourseForm({ ...courseForm, ID: e.target.value })
+            }
             sx={{ marginBottom: "1rem" }}
           />
           <TextField
             fullWidth
             label="Course Name"
             value={courseForm.name}
-            onChange={(e) => setCourseForm({ ...courseForm, name: e.target.value })}
+            onChange={(e) =>
+              setCourseForm({ ...courseForm, name: e.target.value })
+            }
             sx={{ marginBottom: "1rem" }}
           />
           <TextField
@@ -291,7 +316,12 @@ const CourseManagementPage = () => {
           >
             {courseToEdit ? "Update Course" : "Add Course"}
           </Button>
-          <Button variant="outlined" color="secondary" fullWidth onClick={handleCloseForm}>
+          <Button
+            variant="outlined"
+            color="secondary"
+            fullWidth
+            onClick={handleCloseForm}
+          >
             Cancel
           </Button>
         </Box>
