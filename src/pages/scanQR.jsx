@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Box, Typography, Button, Snackbar, Alert } from "@mui/material";
+import { Box, Typography, Snackbar, Alert, IconButton } from "@mui/material";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack"; // Back arrow icon
 import QrScanner from "qr-scanner"; // Import QR scanning library
 import { doc, getDoc, addDoc, collection } from "firebase/firestore";
 import { db } from "../services/firebaseConfig";
@@ -104,11 +105,25 @@ const ScanQR = () => {
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
-        justifyContent: "center",
+        justifyContent: "center", // Centers content vertically
         height: "100vh",
         padding: "1rem",
+        position: "relative", // For back button positioning
       }}
     >
+      {/* Back Button */}
+      <IconButton
+        onClick={() => navigate(`/course-dashboard/${courseName}`)}
+        sx={{
+          position: "absolute",
+          top: "1rem",
+          left: "1rem",
+        }}
+      >
+        <ArrowBackIcon />
+      </IconButton>
+
+      {/* Header */}
       <Typography variant="h4" sx={{ marginBottom: "1rem" }}>
         {courseName ? `Scan QR for ${courseName}` : "Scan QR"}
       </Typography>
@@ -122,6 +137,9 @@ const ScanQR = () => {
           sx={{
             width: "300px",
             height: "300px",
+            display: "flex",
+            justifyContent: "center", // Centers the video horizontally
+            alignItems: "center", // Centers the video vertically
             position: "relative",
             overflow: "hidden",
             borderRadius: "8px",
@@ -142,15 +160,6 @@ const ScanQR = () => {
           />
         </Box>
       )}
-
-      <Button
-        variant="outlined"
-        color="secondary"
-        sx={{ marginTop: "1rem" }}
-        onClick={() => navigate(`/course-dashboard/${courseName}`)}
-      >
-        Return to Dashboard
-      </Button>
 
       {/* Success Snackbar */}
       <Snackbar

@@ -10,15 +10,18 @@ import {
   TableRow,
   CircularProgress,
   Paper,
+  IconButton,
 } from "@mui/material";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { collection, query, where, getDocs, doc, getDoc } from "firebase/firestore";
 import { db } from "../services/firebaseConfig";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 
 const GenerateReport = () => {
   const { courseId } = useParams();
   const [reportData, setReportData] = useState([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchReportData = async () => {
@@ -81,9 +84,25 @@ const GenerateReport = () => {
 
   return (
     <Box sx={{ maxWidth: "80%", margin: "2rem auto", textAlign: "center" }}>
+      {/* Back Button */}
+      <Box sx={{ textAlign: "left", marginBottom: "0.5rem" }}>
+        <IconButton
+          onClick={() => navigate(-1)} // Navigate back to the previous page
+          sx={{
+            color: "#000", // Black color for the button
+            fontSize: "1.2rem",
+          }}
+        >
+          <ArrowBackIcon /> {/* Back arrow icon */}
+        </IconButton>
+      </Box>
+
+      {/* Header */}
       <Typography variant="h4" sx={{ marginBottom: "2rem" }}>
         Attendance Report for Course {courseId}
       </Typography>
+
+      {/* Report Table */}
       <TableContainer component={Paper}>
         <Table>
           <TableHead>

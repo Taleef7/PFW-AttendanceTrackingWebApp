@@ -13,11 +13,12 @@ import {
   TextField,
   Button,
 } from "@mui/material";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { collection, doc, getDoc, updateDoc, arrayRemove } from "firebase/firestore";
 import { db } from "../services/firebaseConfig";
-import { useParams, useLocation } from "react-router-dom";
+import { useParams, useLocation, useNavigate } from "react-router-dom";
 
 const StudentList = () => {
   const { courseId } = useParams();
@@ -27,6 +28,7 @@ const StudentList = () => {
   const [loading, setLoading] = useState(true);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState(null);
+  const navigate = useNavigate();
 
   // Fetch students
   useEffect(() => {
@@ -131,9 +133,28 @@ const StudentList = () => {
 
   return (
     <Box sx={{ maxWidth: "60%", margin: "2rem auto", textAlign: "center" }}>
+      {/* Back Button */}
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          cursor: "pointer",
+          mb: 2,
+        }}
+        onClick={() => navigate(-1)} // Navigate back to the previous page
+      >
+        <IconButton>
+          <ArrowBackIcon sx={{ fontSize: 28 }} />
+        </IconButton>
+        <Typography variant="body1" sx={{ ml: 1, fontSize: 18, fontWeight: "bold" }}>
+        </Typography>
+      </Box>
+
+      {/* Page Header */}
       <Typography variant="h4" sx={{ marginBottom: "1.5rem" }}>
         Student List for Course {courseName}
       </Typography>
+
       {students.length > 0 ? (
         <Card
           sx={{
