@@ -182,7 +182,11 @@ const CourseDashboard = () => {
         }}
       >
         <IconButton
-          onClick={() => navigate(-1)}
+          onClick={() =>
+            navigate(`/course-management/${semesterId}`, {
+              state: { semesterName },
+            })
+          }
           sx={{
             backgroundColor: "#f5f5f5",
             "&:hover": {
@@ -195,7 +199,7 @@ const CourseDashboard = () => {
         <Typography variant="h4">
           {semesterName} - {courseName || "Course Dashboard"}
         </Typography>
-        <Box sx={{ width: "48px" }} /> {/* Spacer to balance the layout */}
+        <Box sx={{ width: "48px" }} />
       </Box>
 
       {/* Action Grid */}
