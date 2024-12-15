@@ -16,6 +16,8 @@ import Navbar from "./components/Navbar"; // Navbar component
 import Footer from "./components/Footer"; // Footer component
 import "./App.css";
 import "./../src/styles/styles.css";
+import { Box } from "@mui/material";
+
 
 const AppRoutes = () => {
   const location = useLocation();
@@ -62,8 +64,16 @@ const AppRoutes = () => {
 
 const App = () => (
   <Router>
+  <Box
+    sx={{
+      display: "flex",
+      flexDirection: "column",
+      minHeight: "100vh",
+    }}
+  >
     <AppRoutes />
-  </Router>
+  </Box>
+</Router>
 );
 
 export default App;
