@@ -34,18 +34,21 @@ import DescriptionIcon from "@mui/icons-material/Description";
 import NoteAddIcon from "@mui/icons-material/NoteAdd";
 import { db } from "../services/firebaseConfig";
 import { generateQRCodeForStudent } from "../utils/qrCodeUtils";
+import * as XLSX from "xlsx";
 
 const CourseDashboard = () => {
   const { courseId } = useParams();
   const location = useLocation();
   const { semesterId, semesterName, courseName } = location.state || {};
   const [isAddStudentOpen, setIsAddStudentOpen] = useState(false);
+  const [isImportOpen, setIsImportOpen] = useState(false);
   const [newStudent, setNewStudent] = useState({
     firstName: "",
     lastName: "",
     studentId: "",
     email: "",
   });
+  const [importFile, setImportFile] = useState(null);
   const [courseData, setCourseData] = useState(null);
   const [notificationOpen, setNotificationOpen] = useState(false);
   const [notificationMessage, setNotificationMessage] = useState("");
@@ -69,7 +72,11 @@ const CourseDashboard = () => {
             onClick: handleQrCodeSent,
           },
           { label: "Student List", icon: <ListAltIcon />, path: `/student-list/${courseId}` },
-          { label: "Import Class List", icon: <FileDownloadIcon />, path: `/import-class/${courseId}` },
+          {
+            label: "Import Class List",
+            icon: <FileDownloadIcon />,
+            onClick: () => setIsImportOpen(true),
+          },
           { label: "Analytics Screen", icon: <BarChartIcon />, path: `/analytics/${courseId}` },
           { label: "Generate Student Report", icon: <DescriptionIcon />, path: `/generate-report/${courseId}` },
           { label: "Individual Student Report", icon: <DescriptionIcon />, path: `/student-report/${courseId}` },
@@ -87,15 +94,24 @@ const CourseDashboard = () => {
     setNewStudent({ firstName: "", lastName: "", studentId: "", email: "" });
   };
 
-  const handleAddStudent = async (courseId) => {
-    if (!newStudent.firstName || !newStudent.lastName || !newStudent.studentId || !newStudent.email) {
-      alert("Please fill in all fields. None of the fields can be empty.");
+  const closeImportModal = () => {
+    setIsImportOpen(false);
+    setImportFile(null);
+  };
+
+  const handleAddStudent = async (student) => {
+    const { firstName, lastName, studentId, email } = student;
+
+    if (!firstName || !lastName || !studentId || !email) {
+      setNotificationMessage("Please fill in all fields.");
+      setNotificationSeverity("error");
+      setNotificationOpen(true);
       return;
     }
 
     try {
       const studentRef = collection(db, "students");
-      const q = query(studentRef, where("email", "==", newStudent.email));
+      const q = query(studentRef, where("email", "==", email));
       const studentSnapshot = await getDocs(q);
 
       let studentDocId;
@@ -105,17 +121,17 @@ const CourseDashboard = () => {
       } else {
         const qrCode = await generateQRCodeForStudent(
           {
-            id: newStudent.studentId,
-            email: newStudent.email,
+            id: studentId,
+            email: email,
           },
           courseId
         );
 
         const studentDoc = await addDoc(studentRef, {
-          firstName: newStudent.firstName,
-          lastName: newStudent.lastName,
-          studentId: newStudent.studentId,
-          email: newStudent.email,
+          firstName: firstName,
+          lastName: lastName,
+          studentId: studentId,
+          email: email,
           qrCode,
         });
         studentDocId = studentDoc.id;
@@ -138,13 +154,68 @@ const CourseDashboard = () => {
       }
 
       setNotificationOpen(true);
-      setNewStudent({ firstName: "", lastName: "", studentId: "", email: "" });
       closeAddStudentModal();
     } catch (error) {
-      setNotificationOpen(true);
       setNotificationMessage("Error adding student to course.");
       setNotificationSeverity("error");
+      setNotificationOpen(true);
     }
+  };
+
+  const handleImportStudents = async () => {
+    if (!importFile) {
+      setNotificationMessage("Please select a file to import.");
+      setNotificationSeverity("error");
+      setNotificationOpen(true);
+      return;
+    }
+
+    try {
+      const fileReader = new FileReader();
+      fileReader.onload = async (event) => {
+        const data = event.target.result;
+        const workbook = XLSX.read(data, { type: "binary" });
+        const sheetName = workbook.SheetNames[0];
+        const sheet = workbook.Sheets[sheetName];
+        const students = XLSX.utils.sheet_to_json(sheet);
+
+        const results = await Promise.all(
+          students.map(async (student) => {
+            const { firstName, lastName, email, studentId } = student;
+            if (firstName && lastName && email && studentId) {
+              try {
+                await handleAddStudent({ firstName, lastName, studentId, email });
+                return { success: true };
+              } catch (error) {
+                return { success: false, message: error.message };
+              }
+            } else {
+              return { success: false, message: "Missing required fields in the file." };
+            }
+          })
+        );
+
+        const successCount = results.filter((res) => res.success).length;
+        const failureCount = results.length - successCount;
+
+        setNotificationMessage(
+          `Import complete. ${successCount} students added successfully. ${failureCount} failed.`
+        );
+        setNotificationSeverity("success");
+        setNotificationOpen(true);
+        closeImportModal();
+      };
+
+      fileReader.readAsBinaryString(importFile);
+    } catch (error) {
+      setNotificationMessage("Error importing students.");
+      setNotificationSeverity("error");
+      setNotificationOpen(true);
+    }
+  };
+
+  const handleFileChange = (event) => {
+    setImportFile(event.target.files[0]);
   };
 
   const handleQrCodeSent = () => {
@@ -172,7 +243,6 @@ const CourseDashboard = () => {
         padding: "1rem",
       }}
     >
-      {/* Header with Back Button */}
       <Box
         sx={{
           display: "flex",
@@ -202,7 +272,6 @@ const CourseDashboard = () => {
         <Box sx={{ width: "48px" }} />
       </Box>
 
-      {/* Action Grid */}
       <Grid container spacing={3}>
         {courseData.actions.map((action, index) => (
           <Grid item xs={12} sm={6} md={4} lg={3} key={index}>
@@ -249,7 +318,6 @@ const CourseDashboard = () => {
         ))}
       </Grid>
 
-      {/* Add Student Modal */}
       <Modal
         open={isAddStudentOpen}
         onClose={closeAddStudentModal}
@@ -277,7 +345,9 @@ const CourseDashboard = () => {
             variant="outlined"
             sx={{ marginBottom: "1rem" }}
             value={newStudent.firstName}
-            onChange={(e) => setNewStudent((prev) => ({ ...prev, firstName: e.target.value }))}
+            onChange={(e) =>
+              setNewStudent((prev) => ({ ...prev, firstName: e.target.value }))
+            }
             required
           />
           <TextField
@@ -286,7 +356,9 @@ const CourseDashboard = () => {
             variant="outlined"
             sx={{ marginBottom: "1rem" }}
             value={newStudent.lastName}
-            onChange={(e) => setNewStudent((prev) => ({ ...prev, lastName: e.target.value }))}
+            onChange={(e) =>
+              setNewStudent((prev) => ({ ...prev, lastName: e.target.value }))
+            }
             required
           />
           <TextField
@@ -295,7 +367,9 @@ const CourseDashboard = () => {
             variant="outlined"
             sx={{ marginBottom: "1rem" }}
             value={newStudent.studentId}
-            onChange={(e) => setNewStudent((prev) => ({ ...prev, studentId: e.target.value }))}
+            onChange={(e) =>
+              setNewStudent((prev) => ({ ...prev, studentId: e.target.value }))
+            }
             required
           />
           <TextField
@@ -305,7 +379,9 @@ const CourseDashboard = () => {
             variant="outlined"
             sx={{ marginBottom: "1rem" }}
             value={newStudent.email}
-            onChange={(e) => setNewStudent((prev) => ({ ...prev, email: e.target.value }))}
+            onChange={(e) =>
+              setNewStudent((prev) => ({ ...prev, email: e.target.value }))
+            }
             required
           />
           <Button
@@ -313,7 +389,7 @@ const CourseDashboard = () => {
             color="primary"
             fullWidth
             sx={{ marginBottom: "1rem" }}
-            onClick={() => handleAddStudent(courseId)}
+            onClick={() => handleAddStudent(newStudent)}
           >
             Add Student
           </Button>
@@ -328,7 +404,61 @@ const CourseDashboard = () => {
         </Box>
       </Modal>
 
-      {/* Notification */}
+      <Modal
+        open={isImportOpen}
+        onClose={closeImportModal}
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        <Box
+          sx={{
+            backgroundColor: "#fff",
+            padding: "2rem",
+            borderRadius: "8px",
+            width: "400px",
+            boxShadow: 24,
+          }}
+        >
+          <Typography variant="h6" sx={{ marginBottom: "1rem" }}>
+            Import Students
+          </Typography>
+          <Button
+            variant="outlined"
+            component="label"
+            sx={{ marginBottom: "1rem" }}
+          >
+            Upload File
+            <input
+              type="file"
+              hidden
+              accept=".csv, .xlsx"
+              onChange={handleFileChange}
+            />
+          </Button>
+          {importFile && <Typography>{importFile.name}</Typography>}
+          <Button
+            variant="contained"
+            color="primary"
+            fullWidth
+            sx={{ marginBottom: "1rem" }}
+            onClick={handleImportStudents}
+          >
+            Import
+          </Button>
+          <Button
+            variant="outlined"
+            color="secondary"
+            fullWidth
+            onClick={closeImportModal}
+          >
+            Cancel
+          </Button>
+        </Box>
+      </Modal>
+
       <Snackbar
         open={notificationOpen}
         autoHideDuration={3000}
