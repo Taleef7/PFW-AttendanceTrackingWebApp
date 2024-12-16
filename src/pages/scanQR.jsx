@@ -90,7 +90,7 @@ const ScanQR = () => {
         courseId,
         email: studentData.email,
         timestamp: formattedTimestamp,
-        status: "present",
+        status: true,
       });
   
       setSuccessMessage("Attendance marked successfully!");
