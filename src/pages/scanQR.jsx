@@ -1,27 +1,28 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { Box, Typography, Snackbar, Alert, IconButton } from "@mui/material";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack"; // Back arrow icon
-import QrScanner from "qr-scanner"; // Import QR scanning library
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import QrScanner from "qr-scanner";
 import { doc, getDoc, addDoc, collection } from "firebase/firestore";
 import { db } from "../services/firebaseConfig";
 
 const ScanQR = () => {
-  const { courseId, courseName, semesterName, semesterId } = useParams(); // Get the course name dynamically
-  const [error, setError] = useState(null); // To handle camera errors
-  const [successMessage, setSuccessMessage] = useState(null); // Snackbar for success messages
-  const [errorMessage, setErrorMessage] = useState(null); // Snackbar for error messages
-  const videoRef = useRef(null); // Reference to the video element
-  const scannerRef = useRef(null); // Reference to the QR scanner instance
-  const navigate = useNavigate(); // For navigation
+  const { courseId} = useParams();
+  const location = useLocation();
+  const { semesterId, semesterName, courseName } = location.state || {};
+  const [error, setError] = useState(null);
+  const [successMessage, setSuccessMessage] = useState(null);
+  const [errorMessage, setErrorMessage] = useState(null);
+  const videoRef = useRef(null);
+  const scannerRef = useRef(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const startCamera = async () => {
       try {
-        // Request camera access
         const mediaStream = await navigator.mediaDevices.getUserMedia({
           video: {
-            facingMode: "environment", // Use the back camera
+            facingMode: "environment",
           },
         });
         if (videoRef.current) {
@@ -37,7 +38,6 @@ const ScanQR = () => {
     startCamera();
 
     return () => {
-      // Stop the camera and scanner when the component unmounts
       if (videoRef.current && videoRef.current.srcObject) {
         const tracks = videoRef.current.srcObject.getTracks();
         tracks.forEach((track) => track.stop());
@@ -52,19 +52,16 @@ const ScanQR = () => {
     try {
       const { studentId, courseId } = JSON.parse(qrData);
 
-      // Ensure the scanned QR code matches the course
       if (courseId !== courseName) {
         throw new Error("This QR code does not match the current course.");
       }
 
-      // Check if the student exists in Firestore
       const studentRef = doc(db, "students", studentId);
       const studentDoc = await getDoc(studentRef);
       if (!studentDoc.exists()) {
         throw new Error("Student does not exist.");
       }
 
-      // Mark attendance in Firestore
       await addDoc(collection(db, "attendanceSummaries"), {
         studentId,
         courseId,
@@ -88,7 +85,7 @@ const ScanQR = () => {
         videoElement,
         (result) => {
           validateQRCode(result.data);
-          scannerRef.current.stop(); // Stop scanning after a successful scan
+          scannerRef.current.stop();
         },
         {
           returnDetailedScanResult: true,
@@ -96,7 +93,7 @@ const ScanQR = () => {
       );
     }
 
-    scannerRef.current.start(); // Start scanning
+    scannerRef.current.start();
   };
 
   return (
@@ -105,10 +102,10 @@ const ScanQR = () => {
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
-        justifyContent: "center", // Centers content vertically
+        justifyContent: "center",
         // height: "100vh",
         padding: "1rem",
-        position: "relative", // For back button positioning
+        position: "relative",
       }}
     >
       <Box
@@ -133,6 +130,7 @@ const ScanQR = () => {
             },
           }}
         >
+          {            console.log(semesterId, courseName, semesterName)          }
           <ArrowBackIcon />
         </IconButton>
 
@@ -152,8 +150,8 @@ const ScanQR = () => {
             width: "300px",
             height: "300px",
             display: "flex",
-            justifyContent: "center", // Centers the video horizontally
-            alignItems: "center", // Centers the video vertically
+            justifyContent: "center",
+            alignItems: "center",
             position: "relative",
             overflow: "hidden",
             borderRadius: "8px",
