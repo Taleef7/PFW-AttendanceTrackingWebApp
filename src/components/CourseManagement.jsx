@@ -45,6 +45,8 @@ const CourseManagementPage = () => {
   const [courseToEdit, setCourseToEdit] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [error, setError] = useState("");
+  const [confirmationOpen, setConfirmationOpen] = useState(false);
+  const [selectedCourse, setSelectedCourse] = useState(null);
 
   const navigate = useNavigate();
 
@@ -133,9 +135,31 @@ const CourseManagementPage = () => {
     setCourseToEdit(null);
   };
 
-  const handleNavigateToCourse = (courseId, courseName, semesterId, semesterName) => {
-    navigate(`/course-dashboard/${courseId}`, {
-      state: { semesterId: semesterId, courseName: courseName, semesterName: semesterName },
+  const handleCourseClick = (course) => {
+    setSelectedCourse(course);
+    setConfirmationOpen(true); // Open the modal
+  };
+
+  const handleClassConfirmation = async (isTakingClass) => {
+    if (isTakingClass) {
+      try {
+        const courseRef = doc(db, "courses", selectedCourse.id);
+        await updateDoc(courseRef, {
+          totalClasses: selectedCourse.totalClasses + 1,
+        });
+      } catch (error) {
+        console.error("Error updating total classes:", error);
+      }
+    }
+
+    // Close the modal and navigate
+    setConfirmationOpen(false);
+    navigate(`/course-dashboard/${selectedCourse.id}`, {
+      state: {
+        semesterId: semesterId,
+        courseName: selectedCourse.name,
+        semesterName: semesterName,
+      },
     });
   };
 
@@ -212,9 +236,7 @@ const CourseManagementPage = () => {
                 boxShadow: 6,
               },
             }}
-            onClick={() =>
-              handleNavigateToCourse(course.id, course.name, semesterId, semesterName)
-            }
+            onClick={() => handleCourseClick(course)}
           >
             <CardContent>
               <Box
@@ -255,6 +277,45 @@ const CourseManagementPage = () => {
           </Card>
         ))}
       </Box>
+
+      {/* Confirmation Modal */}
+      <Modal
+        open={confirmationOpen}
+        onClose={() => setConfirmationOpen(false)}
+        sx={{ display: "flex", justifyContent: "center", alignItems: "center" }}
+      >
+        <Box
+          sx={{
+            width: 400,
+            backgroundColor: "white",
+            padding: "2rem",
+            borderRadius: "8px",
+            boxShadow: 24,
+          }}
+        >
+          <Typography variant="h6" gutterBottom>
+            Is the instructor taking a class today?
+          </Typography>
+          <Box sx={{ display: "flex", gap: "1rem", marginTop: "1rem" }}>
+            <Button
+              variant="contained"
+              color="primary"
+              fullWidth
+              onClick={() => handleClassConfirmation(true)}
+            >
+              Yes
+            </Button>
+            <Button
+              variant="outlined"
+              color="secondary"
+              fullWidth
+              onClick={() => handleClassConfirmation(false)}
+            >
+              No
+            </Button>
+          </Box>
+        </Box>
+      </Modal>
 
       {/* Form Modal */}
       <Modal
