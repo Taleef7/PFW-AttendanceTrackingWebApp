@@ -411,7 +411,7 @@ const CourseManagementPage = () => {
         open={notificationOpen}
         autoHideDuration={3000}
         onClose={handleNotificationClose}
-        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
       >
         <Alert
           onClose={handleNotificationClose}

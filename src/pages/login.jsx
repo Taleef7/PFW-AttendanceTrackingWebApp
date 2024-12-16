@@ -14,7 +14,6 @@ const Login = () => {
   const handleLogin = async () => {
     try {
         await login(email, password);
-        alert("Login successful!");
         navigate('/dashboard');  
     } catch (err) {
       setError(err.message);
