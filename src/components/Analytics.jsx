@@ -111,12 +111,12 @@ const Analytics = () => {
   };
 
   return (
-    <Box sx={{ maxWidth: "100%", margin: "2rem auto", textAlign: "center", position: "relative" }}>
+    <Box sx={{width: "80vw", maxWidth: "100%", margin: "2rem auto", textAlign: "center", position: "relative" }}>
       {/* Header */}
       <Box
         sx={{
           display: "flex",
-          justifyContent: "space-between",
+          justifyContent: "space-evenly",
           alignItems: "center",
           marginBottom: "1.5rem",
         }}
@@ -135,24 +135,22 @@ const Analytics = () => {
         <Typography variant="h4">Attendance Analytics</Typography>
       </Box>
 
-      {/* Bar Chart */}
       <Box
         sx={{
-          width: "100%", // Increase width
-          height: "500px", // Set a fixed height
-          margin: "0 auto", // Center the chart
+          width: "100%",
+          height: "500px",
+          margin: "0 auto", 
         }}
       >
         <Bar
           data={data}
           options={{
             ...options,
-            maintainAspectRatio: false, // Allow the chart to fill the container
+            maintainAspectRatio: false,
           }}
         />
       </Box>
     </Box>
-
   );
 };
 
