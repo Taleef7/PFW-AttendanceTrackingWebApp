@@ -17,6 +17,8 @@ import {
   Modal,
   TextField,
   IconButton,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -24,7 +26,7 @@ import AddIcon from "@mui/icons-material/Add";
 import { useNavigate } from "react-router-dom";
 
 const SemesterManagement = () => {
-  const instructorId = localStorage.getItem('uid');
+  const instructorId = localStorage.getItem("uid");
   const [semesters, setSemesters] = useState([]);
   const [newSemester, setNewSemester] = useState({
     name: "",
@@ -35,6 +37,12 @@ const SemesterManagement = () => {
   const [error, setError] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingSemester, setEditingSemester] = useState(null);
+
+  // Notification state
+  const [notificationOpen, setNotificationOpen] = useState(false);
+  const [notificationMessage, setNotificationMessage] = useState("");
+  const [notificationSeverity, setNotificationSeverity] = useState("success"); // success | error | info | warning
+
   const navigate = useNavigate();
 
   // Fetch semesters and sort by start date
@@ -58,13 +66,19 @@ const SemesterManagement = () => {
         setSemesters(fetchedSemesters);
       } catch (error) {
         console.error("Error fetching semesters:", error);
-        setError("Failed to fetch semesters. Please try again later.");
+        setNotificationMessage("Failed to fetch semesters. Please try again later.");
+        setNotificationSeverity("error");
+        setNotificationOpen(true);
       }
       setLoading(false);
     };
 
     fetchSemesters();
   }, [instructorId]);
+
+  const handleNotificationClose = () => {
+    setNotificationOpen(false);
+  };
 
   // Open modal for add or edit
   const openModal = (semester = null) => {
@@ -91,12 +105,14 @@ const SemesterManagement = () => {
   };
 
   // Check for overlapping semesters
-  const isDateConflict = (startDate, endDate) => {
-    return semesters.some(
-      (semester) =>
-        new Date(startDate) <= new Date(semester.endDate) &&
-        new Date(endDate) >= new Date(semester.startDate)
-    );
+  const isDateConflict = (startDate, endDate, editingSemesterId = null) => {
+    return semesters
+      .filter((semester) => semester.id !== editingSemesterId) // Exclude the semester being edited
+      .some(
+        (semester) =>
+          new Date(startDate) <= new Date(semester.endDate) &&
+          new Date(endDate) >= new Date(semester.startDate)
+      );
   };
 
   // Add or update a semester
@@ -106,18 +122,24 @@ const SemesterManagement = () => {
 
     // Validation: Ensure end date is after start date
     if (new Date(newSemester.startDate) >= new Date(newSemester.endDate)) {
-      setError("End date must be greater than start date.");
+      setNotificationMessage("End date must be greater than start date.");
+      setNotificationSeverity("error");
+      setNotificationOpen(true);
       return;
     }
 
     // Validation: Ensure no overlapping semesters
-    if (isDateConflict(newSemester.startDate, newSemester.endDate)) {
-      setError("The semester dates overlap with an existing semester.");
+    if (isDateConflict(newSemester.startDate, newSemester.endDate, editingSemester)) {
+      setNotificationMessage("The semester dates overlap with an existing semester.");
+      setNotificationSeverity("error");
+      setNotificationOpen(true);
       return;
     }
 
     if (!newSemester.name || !newSemester.startDate || !newSemester.endDate) {
-      setError("All fields are required.");
+      setNotificationMessage("All fields are required.");
+      setNotificationSeverity("error");
+      setNotificationOpen(true);
       return;
     }
 
@@ -134,6 +156,8 @@ const SemesterManagement = () => {
             )
             .sort((a, b) => new Date(a.startDate) - new Date(b.startDate))
         );
+        setNotificationMessage("Semester updated successfully!");
+        setNotificationSeverity("success");
       } else {
         const docRef = await addDoc(collection(db, "semesters"), {
           ...newSemester,
@@ -144,30 +168,39 @@ const SemesterManagement = () => {
             (a, b) => new Date(a.startDate) - new Date(b.startDate)
           )
         );
+        setNotificationMessage("Semester added successfully!");
+        setNotificationSeverity("success");
       }
 
+      setNotificationOpen(true);
       closeModal();
     } catch (error) {
       console.error("Error saving semester:", error);
-      setError("Failed to save semester. Please try again.");
+      setNotificationMessage("Failed to save semester. Please try again.");
+      setNotificationSeverity("error");
+      setNotificationOpen(true);
     }
   };
 
   const handleRemoveSemester = async (semesterId) => {
-    setError("");
     try {
       await deleteDoc(doc(db, "semesters", semesterId));
       setSemesters((prev) =>
         prev.filter((semester) => semester.id !== semesterId)
       );
+      setNotificationMessage("Semester deleted successfully!");
+      setNotificationSeverity("success");
+      setNotificationOpen(true);
     } catch (error) {
       console.error("Error deleting semester:", error);
-      setError("Failed to delete semester. Please try again.");
+      setNotificationMessage("Failed to delete semester. Please try again.");
+      setNotificationSeverity("error");
+      setNotificationOpen(true);
     }
   };
 
   const handleNavigateToCourseManagement = (semesterId, semesterName) => {
-    navigate(`/course-management/${semesterId}`,  { state: { semesterName: semesterName}});
+    navigate(`/course-management/${semesterId}`, { state: { semesterName: semesterName } });
   };
 
   return (
@@ -207,7 +240,9 @@ const SemesterManagement = () => {
             >
               <Typography
                 sx={{ flex: 1, cursor: "pointer", color: "primary.main" }}
-                onClick={() => handleNavigateToCourseManagement(semester.id, semester.name)}
+                onClick={() =>
+                  handleNavigateToCourseManagement(semester.id, semester.name)
+                }
               >
                 {semester.name}
               </Typography>
@@ -321,6 +356,22 @@ const SemesterManagement = () => {
           </form>
         </Box>
       </Modal>
+
+      {/* Notification Snackbar */}
+      <Snackbar
+        open={notificationOpen}
+        autoHideDuration={3000}
+        onClose={handleNotificationClose}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      >
+        <Alert
+          onClose={handleNotificationClose}
+          severity={notificationSeverity}
+          sx={{ width: "100%" }}
+        >
+          {notificationMessage}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };
