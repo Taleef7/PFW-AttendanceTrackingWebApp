@@ -12,6 +12,8 @@ import {
   Modal,
   TextField,
   Button,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import EditIcon from "@mui/icons-material/Edit";
@@ -28,6 +30,12 @@ const StudentList = () => {
   const [loading, setLoading] = useState(true);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState(null);
+
+  // Notification state
+  const [notificationOpen, setNotificationOpen] = useState(false);
+  const [notificationMessage, setNotificationMessage] = useState("");
+  const [notificationSeverity, setNotificationSeverity] = useState("success");
+
   const navigate = useNavigate();
 
   // Fetch students
@@ -77,6 +85,10 @@ const StudentList = () => {
     setIsEditModalOpen(false);
   };
 
+  const handleNotificationClose = () => {
+    setNotificationOpen(false);
+  };
+
   const handleUpdateStudent = async () => {
     if (!selectedStudent) return;
 
@@ -97,10 +109,15 @@ const StudentList = () => {
           .sort((a, b) => a.firstName.localeCompare(b.firstName)) // Re-sort the list
       );
 
-      alert("Student details updated successfully!");
+      setNotificationMessage("Student details updated successfully!");
+      setNotificationSeverity("success");
+      setNotificationOpen(true);
       closeEditModal();
     } catch (error) {
       console.error("Error updating student:", error);
+      setNotificationMessage("Error updating student details.");
+      setNotificationSeverity("error");
+      setNotificationOpen(true);
     }
   };
 
@@ -117,9 +134,14 @@ const StudentList = () => {
       setStudents((prevStudents) =>
         prevStudents.filter((student) => student.id !== studentId)
       );
-      alert("Student removed from course successfully!");
+      setNotificationMessage("Student removed from course successfully!");
+      setNotificationSeverity("success");
+      setNotificationOpen(true);
     } catch (error) {
       console.error("Error removing student from course:", error);
+      setNotificationMessage("Error removing student from course.");
+      setNotificationSeverity("error");
+      setNotificationOpen(true);
     }
   };
 
@@ -140,7 +162,7 @@ const StudentList = () => {
           alignItems: "center",
           cursor: "pointer",
           mb: 2,
-          gap: "20px"
+          gap: "20px",
         }}
         onClick={() => navigate(-1)} // Navigate back to the previous page
       >
@@ -150,16 +172,13 @@ const StudentList = () => {
             "&:hover": {
               backgroundColor: "#b3b3b3",
             },
-          }}>
+          }}
+        >
           <ArrowBackIcon sx={{ fontSize: 28 }} />
         </IconButton>
-      {/* Page Header */}
-      <Typography variant="h4">
-        Student List for Course {courseName}
-      </Typography>
+        {/* Page Header */}
+        <Typography variant="h4">Student List for Course {courseName}</Typography>
       </Box>
-
-
 
       {students.length > 0 ? (
         <Card
@@ -262,6 +281,22 @@ const StudentList = () => {
           )}
         </Box>
       </Modal>
+
+      {/* Notification Snackbar */}
+      <Snackbar
+        open={notificationOpen}
+        autoHideDuration={3000}
+        onClose={handleNotificationClose}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }} // Top-right position
+      >
+        <Alert
+          onClose={handleNotificationClose}
+          severity={notificationSeverity}
+          sx={{ width: "100%" }}
+        >
+          {notificationMessage}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };
