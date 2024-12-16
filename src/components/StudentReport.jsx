@@ -134,10 +134,9 @@ const StudentReport = () => {
       <Box
         sx={{
           display: "flex",
-          justifyContent: "space-between",
+          justifyContent: "space-evenly",
           alignItems: "center",
           marginBottom: "1.5rem",
-          gap: "20px"
         }}
       >
         <IconButton
