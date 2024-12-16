@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Box, Typography, CircularProgress, IconButton } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import { collection, doc, getDoc, query, where, getDocs } from "firebase/firestore";
+import { collection, query, where, getDocs } from "firebase/firestore";
 import { db } from "../services/firebaseConfig";
 import { useParams, useNavigate } from "react-router-dom";
 import { Bar } from "react-chartjs-2";
@@ -12,49 +12,42 @@ ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend);
 const Analytics = () => {
   const { courseId } = useParams();
   const navigate = useNavigate();
-  const [attendanceData, setAttendanceData] = useState({});
+  const [attendanceData, setAttendanceData] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchAttendanceData = async () => {
       try {
-        const courseRef = doc(collection(db, "courses"), courseId);
-        const courseDoc = await getDoc(courseRef);
+        // Query attendanceSummaries for the given courseId
+        const attendanceQuery = query(
+          collection(db, "attendanceSummaries"),
+          where("courseId", "==", courseId)
+        );
 
-        if (courseDoc.exists()) {
-          const courseData = courseDoc.data();
-          const studentIds = courseData.students || [];
-          const classDates = courseData.dates || [];
+        const attendanceSnapshot = await getDocs(attendanceQuery);
 
-          const attendanceQuery = query(
-            collection(db, "attendanceSummaries"),
-            where("courseId", "==", courseId)
-          );
+        // Group attendance by date
+        const groupedAttendance = {};
+        attendanceSnapshot.docs.forEach((doc) => {
+          const { timestamp } = doc.data();
 
-          const attendanceSnapshot = await getDocs(attendanceQuery);
+          // Extract the date from the timestamp (e.g., "December 15, 2024")
+          const date = timestamp.split(" at")[0];
 
-          // Initialize attendance count for each class date
-          const attendanceCount = {};
-          classDates.forEach((date) => {
-            attendanceCount[date] = 0;
-          });
+          // Increment the count for this date
+          if (!groupedAttendance[date]) {
+            groupedAttendance[date] = 0;
+          }
+          groupedAttendance[date]++;
+        });
 
-          // Process attendance for each student
-          attendanceSnapshot.docs.forEach((doc) => {
-            const attendanceData = doc.data();
-            const attendedDates = attendanceData.dates || [];
+        // Convert groupedAttendance to an array of { date, count }
+        const attendanceArray = Object.entries(groupedAttendance).map(([date, count]) => ({
+          date,
+          count,
+        }));
 
-            attendedDates.forEach((date) => {
-              if (attendanceCount[date] !== undefined) {
-                attendanceCount[date]++;
-              }
-            });
-          });
-
-          setAttendanceData(attendanceCount);
-        } else {
-          console.error("Course not found.");
-        }
+        setAttendanceData(attendanceArray);
       } catch (error) {
         console.error("Error fetching attendance data:", error);
       } finally {
@@ -74,11 +67,11 @@ const Analytics = () => {
   }
 
   // Prepare data for the bar chart
-  const dates = Object.keys(attendanceData);
-  const counts = Object.values(attendanceData);
+  const labels = attendanceData.map((item) => item.date);
+  const counts = attendanceData.map((item) => item.count);
 
   const data = {
-    labels: dates,
+    labels,
     datasets: [
       {
         label: "Number of Students Attended",
@@ -104,7 +97,7 @@ const Analytics = () => {
       x: {
         title: {
           display: true,
-          text: "Class Dates",
+          text: "Dates",
         },
       },
       y: {
@@ -118,37 +111,48 @@ const Analytics = () => {
   };
 
   return (
-    <Box sx={{ maxWidth: "80%", margin: "2rem auto", textAlign: "center", position: "relative" }}>
-
+    <Box sx={{ maxWidth: "100%", margin: "2rem auto", textAlign: "center", position: "relative" }}>
+      {/* Header */}
       <Box
         sx={{
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
           marginBottom: "1.5rem",
-          gap: "20px"
         }}
       >
-      <IconButton
-        onClick={() => navigate(-1)}
-        sx={{
-          backgroundColor: "#cccccc",
-          "&:hover": {
-            backgroundColor: "#b3b3b3",
-          },
-        }}
-      >
-        <ArrowBackIcon />
-      </IconButton>
-
-      {/* Header */}
-      <Typography variant="h4">
-        Attendance Analytics
-      </Typography>
+        <IconButton
+          onClick={() => navigate(-1)}
+          sx={{
+            backgroundColor: "#cccccc",
+            "&:hover": {
+              backgroundColor: "#b3b3b3",
+            },
+          }}
+        >
+          <ArrowBackIcon />
+        </IconButton>
+        <Typography variant="h4">Attendance Analytics</Typography>
       </Box>
-      {/* Bar Chart */ }
-  <Bar data={data} options={options} />
-    </Box >
+
+      {/* Bar Chart */}
+      <Box
+        sx={{
+          width: "100%", // Increase width
+          height: "500px", // Set a fixed height
+          margin: "0 auto", // Center the chart
+        }}
+      >
+        <Bar
+          data={data}
+          options={{
+            ...options,
+            maintainAspectRatio: false, // Allow the chart to fill the container
+          }}
+        />
+      </Box>
+    </Box>
+
   );
 };
 
