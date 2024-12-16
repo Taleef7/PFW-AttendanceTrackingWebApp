@@ -78,7 +78,7 @@ const CourseDashboard = () => {
             onClick: () => setIsImportOpen(true),
           },
           { label: "Analytics Screen", icon: <BarChartIcon />, path: `/analytics/${courseId}` },
-          { label: "Generate Student Report", icon: <DescriptionIcon />, path: `/generate-report/${courseId}`, state: { courseName },},
+          { label: "Generate Class Report", icon: <DescriptionIcon />, path: `/generate-report/${courseId}`, state: { courseName },},
           { label: "Individual Student Report", icon: <DescriptionIcon />, path: `/student-report/${courseId}` },
           { label: "Add Student", icon: <NoteAddIcon />, onClick: () => setIsAddStudentOpen(true) },
         ],

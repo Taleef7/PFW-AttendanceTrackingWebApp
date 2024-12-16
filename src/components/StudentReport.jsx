@@ -1,5 +1,12 @@
 import React, { useState, useEffect } from "react";
 import {
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
   Box,
   Typography,
   MenuItem,
@@ -201,22 +208,39 @@ const StudentReport = () => {
       {loading ? (
         <Typography>Loading...</Typography>
       ) : reportData ? (
-        <Card sx={{ padding: "2rem", boxShadow: 3 }}>
-          <CardContent>
-            <Typography variant="h6" sx={{ marginBottom: "1rem" }}>
-              Report for {reportData.name}
-            </Typography>
-            <Typography>
-              Classes Attended: {reportData.attendedClasses}/{reportData.totalClasses}
-            </Typography>
-            <Typography>
-              Last Class Attended: {reportData.lastClassAttended}
-            </Typography>
-            <Typography>
-              Attendance Percentage: {reportData.attendancePercentage}%
-            </Typography>
-          </CardContent>
-        </Card>
+        <Box sx={{ maxWidth: "100%", margin: "2rem auto" }}>
+        <TableContainer component={Paper} sx={{ boxShadow: 3, borderRadius: "10px" }}>
+          <Table>
+            <TableBody>
+              <TableRow>
+                <TableCell sx={{ fontWeight: "bold" }}>Name</TableCell>
+                <TableCell>{reportData.name}</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell sx={{ fontWeight: "bold" }}>Classes Attended</TableCell>
+                <TableCell>
+                  {reportData.attendedClasses}/{reportData.totalClasses}
+                </TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell sx={{ fontWeight: "bold" }}>Last Class Attended</TableCell>
+                <TableCell>{reportData.lastClassAttended}</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell sx={{ fontWeight: "bold" }}>Attendance Percentage</TableCell>
+                <TableCell
+                  sx={{
+                    color: reportData.attendancePercentage >= 75 ? "green" : "red",
+                    fontWeight: "bold",
+                  }}
+                >
+                  {reportData.attendancePercentage}%
+                </TableCell>
+              </TableRow>
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </Box>
       ) : (
         null
       )}
