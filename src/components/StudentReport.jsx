@@ -24,15 +24,15 @@ const StudentReport = () => {
 
   const getLastestAttendedClass = (attendanceDates) => {
     try {
-      const cleanedDates = attendanceDates.map(ts => 
+      const cleanedDates = attendanceDates.map(ts =>
         ts.replace('at ', '').replace(' EST', '')
       );
       const timestampNumbers = cleanedDates.map(ts => new Date(ts).getTime());
       const latestTimestamp = Math.max(...timestampNumbers);
       const lastClassAttendedDate = new Date(latestTimestamp);
       const lastClassAttended = lastClassAttendedDate
-      ? lastClassAttendedDate.toLocaleString("en-US", { timeZone: "America/New_York" }) // Adjust time zone as needed
-      : "N/A";
+        ? lastClassAttendedDate.toLocaleString("en-US", { timeZone: "America/New_York" })
+        : "N/A";
       return lastClassAttended;
     } catch {
       console.log("error getting latest attended class");
@@ -74,6 +74,7 @@ const StudentReport = () => {
   const handleSearch = async () => {
     if (!selectedStudent) return;
     setLoading(true);
+    setReportData(null);
     try {
       const attendanceRef = query(
         collection(db, "attendanceSummaries"),
@@ -87,7 +88,7 @@ const StudentReport = () => {
 
         const attendanceDates = attendanceSnapshot.docs.map(doc => doc.data().timestamp);
         const lastClassAttended = getLastestAttendedClass(attendanceDates);
-        
+
         const totalClassesRef = doc(collection(db, "courses"), courseId);
         const courseDoc = await getDoc(totalClassesRef);
         const totalClasses = courseDoc.exists() ? courseDoc.data().totalClasses : 0;
@@ -96,30 +97,35 @@ const StudentReport = () => {
           collection(db, "students"),
           where("studentId", "==", selectedStudent)
         );
-        
         const studentSnapshot = await getDocs(studentRef);
-        
-        let firstName= "";
+
+        let firstName = "";
         let lastName = "";
         if (!studentSnapshot.empty) {
           const studentData = studentSnapshot.docs[0].data();
           firstName = studentData?.firstName || "Unknown";
-          lastName = studentData?.lastName || "Unknown"
-        } 
-        
-        const attendancePercentage = totalClasses > 0 ?
-          Math.round((attendedClasses / totalClasses) * 100) :
-          0;
+          lastName = studentData?.lastName || "Unknown";
+        }
+
+        const attendancePercentage = totalClasses > 0
+          ? Math.round((attendedClasses / totalClasses) * 100)
+          : 0;
 
         setReportData({
           name: `${firstName} ${lastName}`,
           attendedClasses,
           totalClasses,
           lastClassAttended: lastClassAttended,
-            attendancePercentage: attendancePercentage || 0,
+          attendancePercentage: attendancePercentage || 0,
         });
       } else {
-        setReportData(null);
+        setReportData({
+          name: "No data",
+          attendedClasses: 0,
+          totalClasses: 0,
+          lastClassAttended: "N/A",
+          attendancePercentage: 0,
+        });
       }
     } catch (error) {
       console.error("Error fetching report data:", error);
@@ -128,15 +134,16 @@ const StudentReport = () => {
     }
   };
 
+
   return (
     <Box sx={{ maxWidth: "80%", margin: "2rem auto" }}>
-      {/* Back Button */}
       <Box
         sx={{
           display: "flex",
-          justifyContent: "space-evenly",
+          justifyContent: "flex-start",
           alignItems: "center",
           marginBottom: "1.5rem",
+          gap: "60px",
         }}
       >
         <IconButton
@@ -155,14 +162,14 @@ const StudentReport = () => {
         </Typography>
       </Box>
 
-      {/* Dropdown and Search Button */}
       <Box
         sx={{
           display: "flex",
-          flexDirection: "column",
+          flexDirection: "row",
           alignItems: "center",
-          gap: "1.5rem",
+          gap: "1rem",
           marginBottom: "2rem",
+          justifyContent: "center",
         }}
       >
         <TextField
@@ -189,6 +196,7 @@ const StudentReport = () => {
         </Button>
       </Box>
 
+
       {/* Report output */}
       {loading ? (
         <Typography>Loading...</Typography>
@@ -210,9 +218,7 @@ const StudentReport = () => {
           </CardContent>
         </Card>
       ) : (
-        selectedStudent && (
-          <Typography>No attendance data found for this student.</Typography>
-        )
+        null
       )}
     </Box>
   );
