@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Container, TextField, Button, Typography, Box, Link } from '@mui/material';
+import { Container, TextField, Button, Typography, Box, Link, Snackbar, Alert } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { signup } from '../services/authService';
 import "./../styles/styles.css";
@@ -13,25 +13,45 @@ const Register = () => {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
 
+  // Snackbar state
+  const [notificationOpen, setNotificationOpen] = useState(false);
+  const [notificationMessage, setNotificationMessage] = useState('');
+  const [notificationSeverity, setNotificationSeverity] = useState('success'); // success | error
+
   const handleRegister = async () => {
     if (password !== confirmPassword) {
       setError("Passwords do not match");
+      setNotificationMessage("Passwords do not match.");
+      setNotificationSeverity("error");
+      setNotificationOpen(true);
       return;
     }
 
     setLoading(true);
     try {
       await signup(email, password);
-      alert("Registration successful! Please check your email to verify your account.");
-      navigate('/login');
+      setNotificationMessage("Registration successful! Please check your email to verify your account.");
+      setNotificationSeverity("success");
+      setNotificationOpen(true);
+
+      // Redirect after successful signup
+      setTimeout(() => {
+        navigate('/login');
+      }, 3000); // Allow user to see the notification before redirecting
     } catch (err) {
-      setError(err.message);
+      setNotificationMessage(err.message || "Signup failed. Please try again.");
+      setNotificationSeverity("error");
+      setNotificationOpen(true);
     }
     setLoading(false);
   };
 
-  const handleLoginRedirect = async () => {
+  const handleLoginRedirect = () => {
     navigate('/login');
+  };
+
+  const handleNotificationClose = () => {
+    setNotificationOpen(false);
   };
 
   return (
@@ -95,6 +115,18 @@ const Register = () => {
           </Box>
         </Box>
       </Box>
+
+      {/* Notification Snackbar */}
+      <Snackbar
+        open={notificationOpen}
+        autoHideDuration={3000}
+        onClose={handleNotificationClose}
+        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+      >
+        <Alert onClose={handleNotificationClose} severity={notificationSeverity} sx={{ width: '100%' }}>
+          {notificationMessage}
+        </Alert>
+      </Snackbar>
     </Container>
   );
 };

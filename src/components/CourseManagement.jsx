@@ -320,7 +320,7 @@ const CourseManagementPage = () => {
           }}
         >
           <Typography variant="h6" gutterBottom>
-            Is the instructor taking a class today?
+            Are you taking a class today?
           </Typography>
           <Box sx={{ display: "flex", gap: "1rem", marginTop: "1rem" }}>
             <Button

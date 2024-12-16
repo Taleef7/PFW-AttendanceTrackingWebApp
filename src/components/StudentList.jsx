@@ -2,18 +2,20 @@ import React, { useState, useEffect } from "react";
 import {
   Box,
   Typography,
-  Card,
-  CardContent,
-  List,
-  ListItem,
-  ListItemText,
-  CircularProgress,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
   IconButton,
   Modal,
   TextField,
   Button,
   Snackbar,
   Alert,
+  CircularProgress,
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import EditIcon from "@mui/icons-material/Edit";
@@ -154,7 +156,7 @@ const StudentList = () => {
   }
 
   return (
-    <Box sx={{ maxWidth: "60%", margin: "2rem auto", textAlign: "center" }}>
+    <Box sx={{ maxWidth: "80%", margin: "2rem auto", textAlign: "center" }}>
       {/* Back Button */}
       <Box
         sx={{
@@ -181,31 +183,37 @@ const StudentList = () => {
       </Box>
 
       {students.length > 0 ? (
-        <Card
-          sx={{
-            padding: "1rem",
-            boxShadow: 3,
-          }}
-        >
-          <CardContent>
-            <List>
+        <TableContainer component={Paper}>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell><strong>First Name</strong></TableCell>
+                <TableCell><strong>Last Name</strong></TableCell>
+                <TableCell><strong>Student ID</strong></TableCell>
+                <TableCell><strong>Email</strong></TableCell>
+                <TableCell><strong>Actions</strong></TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
               {students.map((student) => (
-                <ListItem key={student.id} sx={{ borderBottom: "1px solid #ddd" }}>
-                  <ListItemText
-                    primary={`${student.firstName} ${student.lastName}`}
-                    secondary={`Email: ${student.email}`}
-                  />
-                  <IconButton color="primary" onClick={() => openEditModal(student)}>
-                    <EditIcon />
-                  </IconButton>
-                  <IconButton color="error" onClick={() => handleDeleteStudent(student.id)}>
-                    <DeleteIcon />
-                  </IconButton>
-                </ListItem>
+                <TableRow key={student.id}>
+                  <TableCell>{student.firstName}</TableCell>
+                  <TableCell>{student.lastName}</TableCell>
+                  <TableCell>{student.studentId}</TableCell>
+                  <TableCell>{student.email}</TableCell>
+                  <TableCell>
+                    <IconButton color="primary" onClick={() => openEditModal(student)}>
+                      <EditIcon />
+                    </IconButton>
+                    <IconButton color="error" onClick={() => handleDeleteStudent(student.id)}>
+                      <DeleteIcon />
+                    </IconButton>
+                  </TableCell>
+                </TableRow>
               ))}
-            </List>
-          </CardContent>
-        </Card>
+            </TableBody>
+          </Table>
+        </TableContainer>
       ) : (
         <Typography>No students found for this course.</Typography>
       )}
