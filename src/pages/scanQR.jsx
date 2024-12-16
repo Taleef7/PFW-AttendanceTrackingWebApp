@@ -106,7 +106,7 @@ const ScanQR = () => {
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center", // Centers content vertically
-        height: "100vh",
+        // height: "100vh",
         padding: "1rem",
         position: "relative", // For back button positioning
       }}
