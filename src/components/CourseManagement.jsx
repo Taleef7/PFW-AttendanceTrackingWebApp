@@ -8,6 +8,7 @@ import {
   Modal,
   TextField,
   Alert,
+  Snackbar,
   Divider,
   Button,
 } from "@mui/material";
@@ -47,6 +48,11 @@ const CourseManagementPage = () => {
   const [error, setError] = useState("");
   const [confirmationOpen, setConfirmationOpen] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState(null);
+
+  // Notification state
+  const [notificationOpen, setNotificationOpen] = useState(false);
+  const [notificationMessage, setNotificationMessage] = useState("");
+  const [notificationSeverity, setNotificationSeverity] = useState("success");
 
   const navigate = useNavigate();
 
@@ -88,15 +94,21 @@ const CourseManagementPage = () => {
       if (courseToEdit) {
         const courseRef = doc(db, "courses", courseToEdit.id);
         await updateDoc(courseRef, courseForm);
-        alert("Course updated successfully!");
+        setNotificationMessage("Course updated successfully!");
+        setNotificationSeverity("success");
       } else {
         await addDoc(collection(db, "courses"), courseForm);
-        alert("Course added successfully!");
+        setNotificationMessage("Course added successfully!");
+        setNotificationSeverity("success");
       }
 
+      setNotificationOpen(true);
       fetchCourses();
       handleCloseForm();
     } catch (error) {
+      setNotificationMessage("Error saving course.");
+      setNotificationSeverity("error");
+      setNotificationOpen(true);
       console.error("Error saving course:", error);
     }
   };
@@ -104,9 +116,14 @@ const CourseManagementPage = () => {
   const handleDeleteCourse = async (courseId) => {
     try {
       await deleteDoc(doc(db, "courses", courseId));
-      alert("Course deleted successfully!");
+      setNotificationMessage("Course deleted successfully!");
+      setNotificationSeverity("success");
+      setNotificationOpen(true);
       fetchCourses();
     } catch (error) {
+      setNotificationMessage("Error deleting course.");
+      setNotificationSeverity("error");
+      setNotificationOpen(true);
       console.error("Error deleting course:", error);
     }
   };
@@ -137,7 +154,7 @@ const CourseManagementPage = () => {
 
   const handleCourseClick = (course) => {
     setSelectedCourse(course);
-    setConfirmationOpen(true); // Open the modal
+    setConfirmationOpen(true);
   };
 
   const handleClassConfirmation = async (isTakingClass) => {
@@ -147,12 +164,17 @@ const CourseManagementPage = () => {
         await updateDoc(courseRef, {
           totalClasses: selectedCourse.totalClasses + 1,
         });
+        setNotificationMessage("Class session recorded successfully!");
+        setNotificationSeverity("success");
+        setNotificationOpen(true);
       } catch (error) {
+        setNotificationMessage("Error updating class session.");
+        setNotificationSeverity("error");
+        setNotificationOpen(true);
         console.error("Error updating total classes:", error);
       }
     }
 
-    // Close the modal and navigate
     setConfirmationOpen(false);
     navigate(`/course-dashboard/${selectedCourse.id}`, {
       state: {
@@ -161,6 +183,10 @@ const CourseManagementPage = () => {
         semesterName: semesterName,
       },
     });
+  };
+
+  const handleNotificationClose = () => {
+    setNotificationOpen(false);
   };
 
   return (
@@ -379,6 +405,22 @@ const CourseManagementPage = () => {
           </Button>
         </Box>
       </Modal>
+
+      {/* Notification Snackbar */}
+      <Snackbar
+        open={notificationOpen}
+        autoHideDuration={3000}
+        onClose={handleNotificationClose}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      >
+        <Alert
+          onClose={handleNotificationClose}
+          severity={notificationSeverity}
+          sx={{ width: "100%" }}
+        >
+          {notificationMessage}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };
