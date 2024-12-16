@@ -3,7 +3,7 @@ import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { Box, Typography, Snackbar, Alert, IconButton } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import QrScanner from "qr-scanner";
-import { doc, getDoc, addDoc, collection } from "firebase/firestore";
+import { doc, getDoc, addDoc, collection, query, where, getDocs } from "firebase/firestore";
 import { db } from "../services/firebaseConfig";
 
 const ScanQR = () => {
@@ -48,33 +48,59 @@ const ScanQR = () => {
     };
   }, []);
 
+
   const validateQRCode = async (qrData) => {
     try {
-      const { studentId, courseId } = JSON.parse(qrData);
-
-      if (courseId !== courseName) {
+      const { studentId: scannedStudentId, courseId: scannedCourseId } = JSON.parse(qrData);
+  
+      // Validate course ID matches the current courseId from route params
+      if (scannedCourseId !== courseId) {
         throw new Error("This QR code does not match the current course.");
       }
-
-      const studentRef = doc(db, "students", studentId);
-      const studentDoc = await getDoc(studentRef);
-      if (!studentDoc.exists()) {
-        throw new Error("Student does not exist.");
+  
+      // Query Firestore to find a student where "studentId" matches the scanned studentId
+      const studentsRef = collection(db, "students");
+      const studentQuery = query(studentsRef, where("studentId", "==", scannedStudentId));
+      const querySnapshot = await getDocs(studentQuery);
+  
+      if (querySnapshot.empty) {
+        throw new Error("Student does not exist in the database.");
       }
-
+  
+      // Extract student document and data
+      const studentDoc = querySnapshot.docs[0];
+      const studentData = studentDoc.data();
+  
+      // Format timestamp as: December 15, 2024 at 8:53:23 PM UTC-5
+      const now = new Date();
+      const formattedTimestamp = new Intl.DateTimeFormat("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: true,
+        timeZoneName: "short",
+      }).format(now);
+  
+      // Mark attendance in attendanceSummaries
       await addDoc(collection(db, "attendanceSummaries"), {
-        studentId,
+        studentId: scannedStudentId,
         courseId,
-        timestamp: new Date().toISOString(),
+        email: studentData.email,
+        timestamp: formattedTimestamp,
         status: "present",
       });
-
+  
       setSuccessMessage("Attendance marked successfully!");
     } catch (err) {
-      console.error("QR Code Validation Error:", err);
+      console.error("QR Code Validation Error:", err.message);
       setErrorMessage(err.message || "Failed to validate QR code.");
     }
   };
+
+
 
   const handleQRCodeScan = async () => {
     if (!videoRef.current) return;
