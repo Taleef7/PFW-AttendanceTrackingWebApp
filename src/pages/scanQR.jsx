@@ -130,7 +130,6 @@ const ScanQR = () => {
             },
           }}
         >
-          {            console.log(semesterId, courseName, semesterName)          }
           <ArrowBackIcon />
         </IconButton>
 
