@@ -7,7 +7,7 @@ import { doc, getDoc, addDoc, collection } from "firebase/firestore";
 import { db } from "../services/firebaseConfig";
 
 const ScanQR = () => {
-  const { courseName } = useParams(); // Get the course name dynamically
+  const { courseId, courseName, semesterName, semesterId } = useParams(); // Get the course name dynamically
   const [error, setError] = useState(null); // To handle camera errors
   const [successMessage, setSuccessMessage] = useState(null); // Snackbar for success messages
   const [errorMessage, setErrorMessage] = useState(null); // Snackbar for error messages
@@ -50,7 +50,7 @@ const ScanQR = () => {
 
   const validateQRCode = async (qrData) => {
     try {
-      const { studentId, courseId, timestamp } = JSON.parse(qrData);
+      const { studentId, courseId } = JSON.parse(qrData);
 
       // Ensure the scanned QR code matches the course
       if (courseId !== courseName) {
@@ -113,11 +113,15 @@ const ScanQR = () => {
     >
       {/* Back Button */}
       <IconButton
-        onClick={() => navigate(`/course-dashboard/${courseName}`)}
-        sx={{
-          position: "absolute",
-          top: "1rem",
-          left: "1rem",
+        onClick={() =>
+          navigate(`/course-dashboard/${courseId}`, {
+            state: { courseName, semesterName, semesterId },
+          })
+        } sx={{
+          backgroundColor: "#cccccc",
+          "&:hover": {
+            backgroundColor: "#b3b3b3",
+          },
         }}
       >
         <ArrowBackIcon />

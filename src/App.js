@@ -50,7 +50,7 @@ const AppRoutes = () => {
         <Route path="/analytics/:courseId" element={<Analytics />} />
 
         {/* Scan QR */}
-        <Route path="/scan-qr/:courseName" element={<ScanQR />} />
+        <Route path="/scan-qr/:courseId" element={<ScanQR />} />
 
         {/* Fallback for undefined routes
         <Route path="*" element={<Navigate to="/login" />} /> */}

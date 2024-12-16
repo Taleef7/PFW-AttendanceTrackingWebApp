@@ -119,18 +119,17 @@ const Analytics = () => {
 
   return (
     <Box sx={{ maxWidth: "80%", margin: "2rem auto", textAlign: "center", position: "relative" }}>
-      {/* Back Button */}
       <IconButton
-        sx={{
-          position: "absolute",
-          top: "0",
-          left: "-2rem",
-          transform: "translateY(-50%)",
-        }}
-        onClick={() => navigate(-1)}
-      >
-        <ArrowBackIcon />
-      </IconButton>
+          onClick={() => navigate(-1)}
+          sx={{
+            backgroundColor: "#cccccc",
+            "&:hover": {
+              backgroundColor: "#b3b3b3",
+            },
+          }}
+        >
+          <ArrowBackIcon />
+        </IconButton>
 
       {/* Header */}
       <Typography variant="h4" sx={{ marginBottom: "2rem" }}>

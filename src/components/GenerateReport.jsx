@@ -89,8 +89,10 @@ const GenerateReport = () => {
         <IconButton
           onClick={() => navigate(-1)} // Navigate back to the previous page
           sx={{
-            color: "#000", // Black color for the button
-            fontSize: "1.2rem",
+            backgroundColor: "#cccccc",
+            "&:hover": {
+              backgroundColor: "#b3b3b3",
+            },
           }}
         >
           <ArrowBackIcon /> {/* Back arrow icon */}

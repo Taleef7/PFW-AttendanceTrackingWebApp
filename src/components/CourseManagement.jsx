@@ -10,8 +10,6 @@ import {
   Alert,
   Divider,
   Button,
-  AppBar,
-  Toolbar,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
@@ -147,26 +145,35 @@ const CourseManagementPage = () => {
         maxWidth: "80%",
         margin: "2rem auto",
         textAlign: "center",
+        padding: "1rem",
       }}
     >
-      {/* Back Button */}
-      <Box sx={{ display: "flex", alignItems: "center", marginBottom: "1rem" }}>
+      {/* Header with Back Button */}
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: "1.5rem",
+          gap: "40px"
+        }}
+      >
         <IconButton
-          edge="start"
-          color="primary"
           onClick={() => navigate("/dashboard")}
-          sx={{ marginRight: "1rem" }}
+          sx={{
+            backgroundColor: "#cccccc",
+            "&:hover": {
+              backgroundColor: "#b3b3b3",
+            },
+          }}
         >
           <ArrowBackIcon />
         </IconButton>
-        <Typography variant="h5"></Typography>
+        <Typography variant="h4">
+          Courses for Semester {semesterName}
+        </Typography>
+        <Box sx={{ width: "48px" }} />
       </Box>
-
-      {/* Title */}
-      <Typography variant="h4" sx={{ marginBottom: "2rem" }}>
-        Courses for Semester {semesterName}
-      </Typography>
-
       {/* Courses List */}
       <Box
         sx={{

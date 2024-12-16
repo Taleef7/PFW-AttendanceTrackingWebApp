@@ -9,7 +9,7 @@ import {
   CardContent,
   IconButton,
 } from "@mui/material";
-import { ArrowBack } from "@mui/icons-material";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { collection, doc, getDoc, query, where, getDocs } from "firebase/firestore";
 import { db } from "../services/firebaseConfig";
 import { useParams, useNavigate } from "react-router-dom";
@@ -100,19 +100,20 @@ const StudentReport = () => {
       {/* Back Button */}
       <Box sx={{ textAlign: "left", marginBottom: "1rem" }}>
         <IconButton
-          onClick={() => navigate(-1)} // Navigate back to the previous page
+          onClick={() => navigate(-1)}
           sx={{
-            color: "#000", // Black color for the button
+            backgroundColor: "#cccccc",
+            "&:hover": {
+              backgroundColor: "#b3b3b3",
+            },
           }}
         >
-          <ArrowBack /> {/* Back arrow icon */}
+          <ArrowBackIcon />
         </IconButton>
-      </Box>
-
-      {/* Header */}
-      <Typography variant="h4" sx={{ textAlign: "center", marginBottom: "2rem" }}>
+        <Typography variant="h4" sx={{ textAlign: "center", marginBottom: "2rem" }}>
         Student Report
       </Typography>
+      </Box>
 
       {/* Dropdown and Search Button */}
       <Box

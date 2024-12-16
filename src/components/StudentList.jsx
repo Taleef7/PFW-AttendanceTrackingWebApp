@@ -143,7 +143,13 @@ const StudentList = () => {
         }}
         onClick={() => navigate(-1)} // Navigate back to the previous page
       >
-        <IconButton>
+        <IconButton
+          sx={{
+            backgroundColor: "#cccccc",
+            "&:hover": {
+              backgroundColor: "#b3b3b3",
+            },
+          }}>
           <ArrowBackIcon sx={{ fontSize: 28 }} />
         </IconButton>
         <Typography variant="body1" sx={{ ml: 1, fontSize: 18, fontWeight: "bold" }}>

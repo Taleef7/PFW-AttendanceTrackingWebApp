@@ -56,15 +56,15 @@ const CourseDashboard = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const resolvedName = courseId || `Semester-${semesterName}`;
     const fetchCourseData = async () => {
       const fetchedData = {
-        name: resolvedName,
+        name: courseId,
         actions: [
           {
             label: "Scan QR",
             icon: <QrCodeScannerIcon />,
-            path: `/scan-qr/${courseId || semesterId}`,
+            path: `/scan-qr/${courseId}`,
+            state: { courseName, semesterName, semesterId },
           },
           {
             label: "Send QR Codes",
@@ -87,7 +87,7 @@ const CourseDashboard = () => {
     };
 
     fetchCourseData();
-  }, [courseId, semesterId, semesterName]);
+  }, [courseId, semesterId, semesterName, courseName]);
 
   const closeAddStudentModal = () => {
     setIsAddStudentOpen(false);
@@ -224,8 +224,8 @@ const CourseDashboard = () => {
     setNotificationSeverity("success");
   };
 
-  const handleActionClick = (path) => {
-    navigate(path);
+  const handleActionClick = (path, state = {}) => {
+    navigate(path, { state });
   };
 
   const handleCloseNotification = () => {
@@ -258,9 +258,9 @@ const CourseDashboard = () => {
             })
           }
           sx={{
-            backgroundColor: "#f5f5f5",
+            backgroundColor: "#cccccc",
             "&:hover": {
-              backgroundColor: "#e0e0e0",
+              backgroundColor: "#b3b3b3",
             },
           }}
         >
@@ -290,7 +290,9 @@ const CourseDashboard = () => {
                 },
               }}
               onClick={() =>
-                action.onClick ? action.onClick() : handleActionClick(action.path)
+                action.onClick
+                  ? action.onClick()
+                  : handleActionClick(action.path, action.state)
               }
             >
               <CardContent
