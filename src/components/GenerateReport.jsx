@@ -84,10 +84,17 @@ const GenerateReport = () => {
 
   return (
     <Box sx={{ maxWidth: "80%", margin: "2rem auto", textAlign: "center" }}>
-      {/* Back Button */}
-      <Box sx={{ textAlign: "left", marginBottom: "0.5rem" }}>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: "1.5rem",
+          gap: "20px"
+        }}
+      >
         <IconButton
-          onClick={() => navigate(-1)} // Navigate back to the previous page
+          onClick={() => navigate(-1)}
           sx={{
             backgroundColor: "#cccccc",
             "&:hover": {
@@ -95,14 +102,14 @@ const GenerateReport = () => {
             },
           }}
         >
-          <ArrowBackIcon /> {/* Back arrow icon */}
+          <ArrowBackIcon />
         </IconButton>
+        <Typography variant="h4">
+          Attendance Report for Course {courseId}
+        </Typography>
       </Box>
 
-      {/* Header */}
-      <Typography variant="h4" sx={{ marginBottom: "2rem" }}>
-        Attendance Report for Course {courseId}
-      </Typography>
+
 
       {/* Report Table */}
       <TableContainer component={Paper}>

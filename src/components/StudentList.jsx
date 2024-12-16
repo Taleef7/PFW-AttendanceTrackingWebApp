@@ -140,6 +140,7 @@ const StudentList = () => {
           alignItems: "center",
           cursor: "pointer",
           mb: 2,
+          gap: "20px"
         }}
         onClick={() => navigate(-1)} // Navigate back to the previous page
       >
@@ -152,14 +153,13 @@ const StudentList = () => {
           }}>
           <ArrowBackIcon sx={{ fontSize: 28 }} />
         </IconButton>
-        <Typography variant="body1" sx={{ ml: 1, fontSize: 18, fontWeight: "bold" }}>
-        </Typography>
-      </Box>
-
       {/* Page Header */}
-      <Typography variant="h4" sx={{ marginBottom: "1.5rem" }}>
+      <Typography variant="h4">
         Student List for Course {courseName}
       </Typography>
+      </Box>
+
+
 
       {students.length > 0 ? (
         <Card

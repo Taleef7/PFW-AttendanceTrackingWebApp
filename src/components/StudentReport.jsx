@@ -98,7 +98,15 @@ const StudentReport = () => {
   return (
     <Box sx={{ maxWidth: "80%", margin: "2rem auto" }}>
       {/* Back Button */}
-      <Box sx={{ textAlign: "left", marginBottom: "1rem" }}>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: "1.5rem",
+          gap: "20px"
+        }}
+      >
         <IconButton
           onClick={() => navigate(-1)}
           sx={{
@@ -110,9 +118,9 @@ const StudentReport = () => {
         >
           <ArrowBackIcon />
         </IconButton>
-        <Typography variant="h4" sx={{ textAlign: "center", marginBottom: "2rem" }}>
-        Student Report
-      </Typography>
+        <Typography variant="h4" sx={{ textAlign: "center" }}>
+          Student Report
+        </Typography>
       </Box>
 
       {/* Dropdown and Search Button */}
