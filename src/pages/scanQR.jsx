@@ -111,26 +111,36 @@ const ScanQR = () => {
         position: "relative", // For back button positioning
       }}
     >
-      {/* Back Button */}
-      <IconButton
-        onClick={() =>
-          navigate(`/course-dashboard/${courseId}`, {
-            state: { courseName, semesterName, semesterId },
-          })
-        } sx={{
-          backgroundColor: "#cccccc",
-          "&:hover": {
-            backgroundColor: "#b3b3b3",
-          },
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: "1.5rem",
+          gap: "20px"
         }}
       >
-        <ArrowBackIcon />
-      </IconButton>
+        {/* Back Button */}
+        <IconButton
+          onClick={() =>
+            navigate(`/course-dashboard/${courseId}`, {
+              state: { courseName, semesterName, semesterId },
+            })
+          } sx={{
+            backgroundColor: "#cccccc",
+            "&:hover": {
+              backgroundColor: "#b3b3b3",
+            },
+          }}
+        >
+          <ArrowBackIcon />
+        </IconButton>
 
-      {/* Header */}
-      <Typography variant="h4" sx={{ marginBottom: "1rem" }}>
-        {courseName ? `Scan QR for ${courseName}` : "Scan QR"}
-      </Typography>
+        {/* Header */}
+        <Typography variant="h4">
+          {courseName ? `Scan QR for ${courseName}` : "Scan QR"}
+        </Typography>
+      </Box>
 
       {error ? (
         <Typography color="error" variant="body1">
