@@ -148,14 +148,14 @@ const CourseManagementPage = () => {
         padding: "1rem",
       }}
     >
-      {/* Header with Back Button */}
+      {/* Header with Back Button and Add Button */}
       <Box
         sx={{
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
           marginBottom: "1.5rem",
-          gap: "40px"
+          gap: "40px",
         }}
       >
         <IconButton
@@ -172,8 +172,21 @@ const CourseManagementPage = () => {
         <Typography variant="h4">
           Courses for Semester {semesterName}
         </Typography>
-        <Box sx={{ width: "48px" }} />
+        <IconButton
+          color="primary"
+          onClick={() => handleShowForm()}
+          sx={{
+            backgroundColor: "#1976d2",
+            color: "#fff",
+            "&:hover": {
+              backgroundColor: "#1565c0",
+            },
+          }}
+        >
+          <AddIcon />
+        </IconButton>
       </Box>
+
       {/* Courses List */}
       <Box
         sx={{
@@ -241,21 +254,6 @@ const CourseManagementPage = () => {
             </CardContent>
           </Card>
         ))}
-
-        {/* Add Course Button */}
-        <IconButton
-          color="primary"
-          onClick={() => handleShowForm()}
-          sx={{
-            width: 56,
-            height: 56,
-            border: "2px solid #1976d2",
-            borderRadius: "50%",
-            marginTop: "1rem",
-          }}
-        >
-          <AddIcon />
-        </IconButton>
       </Box>
 
       {/* Form Modal */}
@@ -298,19 +296,6 @@ const CourseManagementPage = () => {
             value={courseForm.name}
             onChange={(e) =>
               setCourseForm({ ...courseForm, name: e.target.value })
-            }
-            sx={{ marginBottom: "1rem" }}
-          />
-          <TextField
-            fullWidth
-            label="Total Classes"
-            type="number"
-            value={courseForm.totalClasses}
-            onChange={(e) =>
-              setCourseForm({
-                ...courseForm,
-                totalClasses: parseInt(e.target.value, 10) || 0,
-              })
             }
             sx={{ marginBottom: "1rem" }}
           />
