@@ -15,12 +15,15 @@ import {
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { collection, query, where, getDocs, doc, getDoc } from "firebase/firestore";
 import { db } from "../services/firebaseConfig";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 
 const GenerateReport = () => {
   const { courseId } = useParams();
   const [reportData, setReportData] = useState([]);
   const [loading, setLoading] = useState(true);
+  const location = useLocation();
+  const { courseName } = location.state || {};
+  
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -105,7 +108,7 @@ const GenerateReport = () => {
           <ArrowBackIcon />
         </IconButton>
         <Typography variant="h4">
-          Attendance Report for Course {courseId}
+          Attendance Report for Course {courseName}
         </Typography>
       </Box>
 
