@@ -15,14 +15,30 @@ import { db } from "../services/firebaseConfig";
 import { useParams, useNavigate } from "react-router-dom";
 
 const StudentReport = () => {
-  const { courseId } = useParams(); // Retrieve courseId from URL params
-  const navigate = useNavigate(); // Navigation hook
+  const { courseId } = useParams();
+  const navigate = useNavigate();
   const [students, setStudents] = useState([]);
   const [selectedStudent, setSelectedStudent] = useState("");
   const [reportData, setReportData] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  // Fetch students for the dropdown
+  const getLastestAttendedClass = (attendanceDates) => {
+    try {
+      const cleanedDates = attendanceDates.map(ts => 
+        ts.replace('at ', '').replace(' EST', '')
+      );
+      const timestampNumbers = cleanedDates.map(ts => new Date(ts).getTime());
+      const latestTimestamp = Math.max(...timestampNumbers);
+      const lastClassAttendedDate = new Date(latestTimestamp);
+      const lastClassAttended = lastClassAttendedDate
+      ? lastClassAttendedDate.toLocaleString("en-US", { timeZone: "America/New_York" }) // Adjust time zone as needed
+      : "N/A";
+      return lastClassAttended;
+    } catch {
+      console.log("error getting latest attended class");
+    }
+  }
+
   useEffect(() => {
     const fetchStudents = async () => {
       try {
@@ -55,35 +71,52 @@ const StudentReport = () => {
     fetchStudents();
   }, [courseId]);
 
-  // Fetch report data when a student is selected and "Search" is clicked
   const handleSearch = async () => {
     if (!selectedStudent) return;
-
     setLoading(true);
     try {
       const attendanceRef = query(
         collection(db, "attendanceSummaries"),
-        where("studentID", "==", selectedStudent),
+        where("studentId", "==", selectedStudent),
         where("courseId", "==", courseId)
       );
       const attendanceSnapshot = await getDocs(attendanceRef);
 
       if (!attendanceSnapshot.empty) {
-        const attendanceData = attendanceSnapshot.docs[0].data();
+        const attendedClasses = attendanceSnapshot.size;
+
+        const attendanceDates = attendanceSnapshot.docs.map(doc => doc.data().timestamp);
+        const lastClassAttended = getLastestAttendedClass(attendanceDates);
+        
         const totalClassesRef = doc(collection(db, "courses"), courseId);
         const courseDoc = await getDoc(totalClassesRef);
-
         const totalClasses = courseDoc.exists() ? courseDoc.data().totalClasses : 0;
-        const attendedClasses = attendanceData.dates.length;
 
-        const percentage = Math.round((attendedClasses / totalClasses) * 100);
+        const studentRef = query(
+          collection(db, "students"),
+          where("studentId", "==", selectedStudent)
+        );
+        
+        const studentSnapshot = await getDocs(studentRef);
+        
+        let firstName= "";
+        let lastName = "";
+        if (!studentSnapshot.empty) {
+          const studentData = studentSnapshot.docs[0].data();
+          firstName = studentData?.firstName || "Unknown";
+          lastName = studentData?.lastName || "Unknown"
+        } 
+        
+        const attendancePercentage = totalClasses > 0 ?
+          Math.round((attendedClasses / totalClasses) * 100) :
+          0;
 
         setReportData({
-          name: `${attendanceData.firstName} ${attendanceData.lastName}`,
+          name: `${firstName} ${lastName}`,
           attendedClasses,
           totalClasses,
-          lastClassAttended: attendanceData.lastClass || "N/A",
-          attendancePercentage: percentage || 0,
+          lastClassAttended: lastClassAttended,
+            attendancePercentage: attendancePercentage || 0,
         });
       } else {
         setReportData(null);
@@ -141,7 +174,7 @@ const StudentReport = () => {
           sx={{ width: "300px" }}
         >
           {students.map((student) => (
-            <MenuItem key={student.id} value={student.id}>
+            <MenuItem key={student.studentId} value={student.studentId}>
               {student.firstName} {student.lastName}
             </MenuItem>
           ))}
