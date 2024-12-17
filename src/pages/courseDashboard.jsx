@@ -223,25 +223,27 @@ const CourseDashboard = () => {
   const handleQrCodeSent = async () => {
     setNotificationOpen(false);
     setNotificationMessage("");
-    setNotificationSeverity("success");
-    console.log("Sending QR codes for courseId:", courseId); // Debugging line
+    setNotificationSeverity("info");
+    console.log("Triggering QR Code API for courseId:", courseId); // Debugging line
+
     try {
-      // Call the email service with courseId
       setNotificationMessage("Sending QR codes, please wait...");
       setNotificationSeverity("info");
       setNotificationOpen(true);
 
       const result = await sendQRCodesToStudents(courseId);
+      console.log("API call success:", result); // Debugging line
       setNotificationMessage(`Success: ${result.message}`);
       setNotificationSeverity("success");
     } catch (error) {
-      console.error("Error sending QR codes:", error);
+      console.error("Error in handleQrCodeSent:", error); // Debugging line
       setNotificationMessage("Failed to send QR codes. Please try again.");
       setNotificationSeverity("error");
     } finally {
       setNotificationOpen(true);
     }
   };
+
 
 
   const handleActionClick = (path, state = {}) => {
