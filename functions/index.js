@@ -5,6 +5,8 @@ const admin = require("firebase-admin");
 admin.initializeApp();
 const db = admin.firestore();
 
+const cors = require("cors")({ origin: true });
+
 const transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
@@ -13,11 +15,8 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-
-const cors = require("cors")({ origin: true }); // Add this line
-
 exports.sendQRCodes = onRequest(async (req, res) => {
-  cors(req, res, async () => { // Wrap the function in cors
+  cors(req, res, async () => {
     const { courseId } = req.body;
 
     try {
@@ -42,12 +41,32 @@ exports.sendQRCodes = onRequest(async (req, res) => {
         const mailOptions = {
           from: `Instructor <${process.env.EMAIL_ADDRESS}>`,
           to: email,
-          subject: `QR Code for ${courseName}`,
+          subject: `Your QR Code for Attendance - ${courseName}`,
+          text: `
+Hello ${firstName} ${lastName},
+
+Please find your QR code for the course ${courseName}.
+Please be sure to get your QR code scanned at the start of the next class to have your attendance marked.
+
+Thank you and see you in class!
+
+Sincerely,
+Professor
+
+This email was sent by Purdue University Fort Wayne.
+          `,
           html: `
             <h1>Hello ${firstName} ${lastName},</h1>
-            <p>Here is your QR code for the course <strong>${courseName}</strong>.</p>
+            <p>Please find your QR code for the course <strong>${courseName}</strong>.</p>
+            <p>Please be sure to get your QR code scanned at the start of the next class to have your attendance marked.</p>
             <img src="${qrCode}" alt="QR Code" style="width:200px;height:200px;" />
-            <br/><p>Thank you!</p>
+            <br/>
+            <p>Thank you and see you in class!</p>
+            <br/>
+            <p>Sincerely,</p>
+            <p>Professor</p>
+            <br/>
+            <p><small>This email was sent by Purdue University Fort Wayne.</small></p>
           `,
         };
 
