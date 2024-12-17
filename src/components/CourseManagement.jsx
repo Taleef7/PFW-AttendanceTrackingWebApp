@@ -56,7 +56,7 @@ const CourseManagementPage = () => {
 
   const navigate = useNavigate();
 
-  const fetchCourses = async () => {
+  const fetchCourses = useCallback(async () => {
     try {
       const coursesQuery = query(
         collection(db, "courses"),
@@ -72,7 +72,8 @@ const CourseManagementPage = () => {
     } catch (error) {
       console.error("Error fetching courses:", error);
     }
-  };
+  }, [semesterId, instructorId]);
+
   useEffect(() => {
     fetchCourses();
   }, [fetchCourses]);
