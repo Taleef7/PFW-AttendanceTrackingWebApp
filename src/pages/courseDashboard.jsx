@@ -88,7 +88,7 @@ const CourseDashboard = () => {
     };
 
     fetchCourseData();
-  }, [courseId, semesterId, semesterName, courseName]);
+  });
 
   const closeAddStudentModal = () => {
     setIsAddStudentOpen(false);
