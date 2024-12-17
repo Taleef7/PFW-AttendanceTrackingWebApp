@@ -73,9 +73,11 @@ const ScanQR = () => {
       const studentQuery = query(studentsRef, where("studentId", "==", scannedStudentId));
       const querySnapshot = await getDocs(studentQuery);
 
+
       if (querySnapshot.empty) {
         throw new Error("Student does not exist in the database.");
       }
+
 
       // Extract student document and data
       const studentDoc = querySnapshot.docs[0];

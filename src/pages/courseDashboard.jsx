@@ -25,6 +25,7 @@ import {
   getDoc,
 } from "firebase/firestore";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { sendQRCodesToStudents } from "../services/emailService";
 import QrCodeScannerIcon from "@mui/icons-material/QrCodeScanner";
 import SendIcon from "@mui/icons-material/Send";
 import ListAltIcon from "@mui/icons-material/ListAlt";
@@ -218,11 +219,30 @@ const CourseDashboard = () => {
     setImportFile(event.target.files[0]);
   };
 
-  const handleQrCodeSent = () => {
-    setNotificationOpen(true);
-    setNotificationMessage("QR Codes Sent Successfully!");
+
+  const handleQrCodeSent = async () => {
+    setNotificationOpen(false);
+    setNotificationMessage("");
     setNotificationSeverity("success");
+    console.log("Sending QR codes for courseId:", courseId); // Debugging line
+    try {
+      // Call the email service with courseId
+      setNotificationMessage("Sending QR codes, please wait...");
+      setNotificationSeverity("info");
+      setNotificationOpen(true);
+
+      const result = await sendQRCodesToStudents(courseId);
+      setNotificationMessage(`Success: ${result.message}`);
+      setNotificationSeverity("success");
+    } catch (error) {
+      console.error("Error sending QR codes:", error);
+      setNotificationMessage("Failed to send QR codes. Please try again.");
+      setNotificationSeverity("error");
+    } finally {
+      setNotificationOpen(true);
+    }
   };
+
 
   const handleActionClick = (path, state = {}) => {
     navigate(path, { state });

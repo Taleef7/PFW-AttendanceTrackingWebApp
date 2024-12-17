@@ -1,4 +1,18 @@
 {
+  "functions": {
+    "source": "functions",
+    "runtime": "nodejs20",
+    "params": [
+      {
+        "name": "EMAIL_ADDRESS",
+        "default": "attendancetrackingse@gmail.com"
+      },
+      {
+        "name": "EMAIL_PASSWORD",
+        "default": "tgiscernbrvuzyf"
+      }
+    ]
+  },
   "firestore": {
     "rules": "firestore.rules",
     "indexes": "firestore.indexes.json"
