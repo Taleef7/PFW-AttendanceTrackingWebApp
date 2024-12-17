@@ -42,6 +42,7 @@ const GenerateReport = () => {
     }
   };
 
+
   useEffect(() => {
     const fetchReportData = async () => {
       try {
@@ -49,27 +50,27 @@ const GenerateReport = () => {
         const courseRef = doc(collection(db, "courses"), courseId);
         const courseDoc = await getDoc(courseRef);
         const totalClasses = courseDoc.exists() ? courseDoc.data().totalClasses : 0;
-    
+
         // Step 2: Get all attendance records for the course
         const attendanceQuery = query(
           collection(db, "attendanceSummaries"),
           where("courseId", "==", courseId)
         );
         const attendanceSnapshot = await getDocs(attendanceQuery);
-    
+
         // Group attendance records by studentId
         const attendanceMap = {};
         attendanceSnapshot.docs.forEach((doc) => {
           const data = doc.data();
           const { studentId, timestamp } = data;
-    
+
           if (!attendanceMap[studentId]) {
             attendanceMap[studentId] = { timestamps: [], totalClassAttended: 0 };
           }
           attendanceMap[studentId].timestamps.push(timestamp);
           attendanceMap[studentId].totalClassAttended += 1;
         });
-    
+
         // Step 3: Fetch student details and calculate report data
         const reportPromises = Object.entries(attendanceMap).map(async ([studentId, attendanceData]) => {
           const studentRef = query(
@@ -77,33 +78,36 @@ const GenerateReport = () => {
             where("studentId", "==", studentId)
           );
           const studentSnapshot = await getDocs(studentRef);
-    
+
           if (!studentSnapshot.empty) {
             const studentData = studentSnapshot.docs[0].data();
-    
+
+            // Cap attended classes at totalClasses
+            const cappedAttendedClasses = Math.min(attendanceData.totalClassAttended, totalClasses);
+
             // Calculate the last class attended
             const lastClassAttended = attendanceData.timestamps.length
               ? getLastestAttendedClass(attendanceData.timestamps)
               : "N/A";
-    
+
             // Calculate attendance percentage
             const attendancePercentage = totalClasses > 0
-              ? Math.round((attendanceData.totalClassAttended / totalClasses) * 100)
+              ? Math.round((cappedAttendedClasses / totalClasses) * 100)
               : 0;
-    
+
             return {
               name: `${studentData.firstName} ${studentData.lastName}`,
-              totalClassAttended: attendanceData.totalClassAttended,
+              totalClassAttended: cappedAttendedClasses, // Use capped value
               lastClass: lastClassAttended,
               attendancePercentage,
             };
           }
-    
+
           return null;
         });
-    
+
         const fetchedReportData = await Promise.all(reportPromises);
-    
+
         // Set the report data
         setReportData(fetchedReportData.filter((data) => data !== null));
       } catch (error) {
@@ -111,9 +115,11 @@ const GenerateReport = () => {
       } finally {
         setLoading(false);
       }
-    };    
+    };
+
     fetchReportData();
   }, [courseId]);
+
 
   if (loading) {
     return (

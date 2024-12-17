@@ -88,7 +88,7 @@ const StudentReport = () => {
       const attendanceSnapshot = await getDocs(attendanceRef);
 
       if (!attendanceSnapshot.empty) {
-        const attendedClasses = attendanceSnapshot.size;
+        let attendedClasses = attendanceSnapshot.size;
 
         const attendanceDates = attendanceSnapshot.docs.map(doc => doc.data().timestamp);
         const lastClassAttended = getLastestAttendedClass(attendanceDates);
@@ -96,6 +96,11 @@ const StudentReport = () => {
         const totalClassesRef = doc(collection(db, "courses"), courseId);
         const courseDoc = await getDoc(totalClassesRef);
         const totalClasses = courseDoc.exists() ? courseDoc.data().totalClasses : 0;
+
+        // Safeguard: Cap attendedClasses to totalClasses
+        if (attendedClasses > totalClasses) {
+          attendedClasses = totalClasses;
+        }
 
         const studentRef = query(
           collection(db, "students"),
