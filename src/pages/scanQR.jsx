@@ -3,11 +3,11 @@ import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { Box, Typography, Snackbar, Alert, IconButton } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import QrScanner from "qr-scanner";
-import { doc, getDoc, addDoc, collection, query, where, getDocs } from "firebase/firestore";
+import { addDoc, collection, query, where, getDocs } from "firebase/firestore";
 import { db } from "../services/firebaseConfig";
 
 const ScanQR = () => {
-  const { courseId} = useParams();
+  const { courseId } = useParams();
   const location = useLocation();
   const { semesterId, semesterName, courseName } = location.state || {};
   const [error, setError] = useState(null);
@@ -18,6 +18,9 @@ const ScanQR = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    let videoElement;
+    let scannerInstance;
+  
     const startCamera = async () => {
       try {
         const mediaStream = await navigator.mediaDevices.getUserMedia({
@@ -25,52 +28,55 @@ const ScanQR = () => {
             facingMode: "environment",
           },
         });
-        if (videoRef.current) {
-          videoRef.current.srcObject = mediaStream;
-          videoRef.current.onloadedmetadata = () => videoRef.current.play();
+  
+        videoElement = videoRef.current;
+        if (videoElement) {
+          videoElement.srcObject = mediaStream;
+          videoElement.onloadedmetadata = () => videoElement.play();
         }
       } catch (err) {
         setError("Unable to access camera. Please check your permissions.");
         console.error("Camera error:", err);
       }
     };
-
+  
     startCamera();
-
+  
     return () => {
-      if (videoRef.current && videoRef.current.srcObject) {
-        const tracks = videoRef.current.srcObject.getTracks();
+      if (videoElement && videoElement.srcObject) {
+        const tracks = videoElement.srcObject.getTracks();
         tracks.forEach((track) => track.stop());
       }
-      if (scannerRef.current) {
-        scannerRef.current.stop();
+      scannerInstance = scannerRef.current;
+      if (scannerInstance) {
+        scannerInstance.stop();
       }
     };
   }, []);
-
+  
 
   const validateQRCode = async (qrData) => {
     try {
       const { studentId: scannedStudentId, courseId: scannedCourseId } = JSON.parse(qrData);
-  
+
       // Validate course ID matches the current courseId from route params
       if (scannedCourseId !== courseId) {
         throw new Error("This QR code does not match the current course.");
       }
-  
+
       // Query Firestore to find a student where "studentId" matches the scanned studentId
       const studentsRef = collection(db, "students");
       const studentQuery = query(studentsRef, where("studentId", "==", scannedStudentId));
       const querySnapshot = await getDocs(studentQuery);
-  
+
       if (querySnapshot.empty) {
         throw new Error("Student does not exist in the database.");
       }
-  
+
       // Extract student document and data
       const studentDoc = querySnapshot.docs[0];
       const studentData = studentDoc.data();
-  
+
       // Format timestamp as: December 15, 2024 at 8:53:23 PM UTC-5
       const now = new Date();
       const formattedTimestamp = new Intl.DateTimeFormat("en-US", {
@@ -83,7 +89,7 @@ const ScanQR = () => {
         hour12: true,
         timeZoneName: "short",
       }).format(now);
-  
+
       // Mark attendance in attendanceSummaries
       await addDoc(collection(db, "attendanceSummaries"), {
         studentId: scannedStudentId,
@@ -92,7 +98,7 @@ const ScanQR = () => {
         timestamp: formattedTimestamp,
         status: true,
       });
-  
+
       setSuccessMessage("Attendance marked successfully!");
     } catch (err) {
       console.error("QR Code Validation Error:", err.message);

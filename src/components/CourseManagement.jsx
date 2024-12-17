@@ -73,10 +73,9 @@ const CourseManagementPage = () => {
       console.error("Error fetching courses:", error);
     }
   };
-
   useEffect(() => {
     fetchCourses();
-  }, [semesterId, instructorId]);
+  }, [fetchCourses]);
 
   const validateForm = (course) => {
     if (!course.ID.trim() || !course.name.trim()) {
