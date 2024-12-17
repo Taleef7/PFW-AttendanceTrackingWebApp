@@ -17,18 +17,17 @@ const ScanQR = () => {
   const scannerRef = useRef(null);
   const navigate = useNavigate();
 
+  const scannedSet = useRef(new Set()); // Tracks already scanned QR codes
+
   useEffect(() => {
     let videoElement;
-    let scannerInstance;
-  
+
     const startCamera = async () => {
       try {
         const mediaStream = await navigator.mediaDevices.getUserMedia({
-          video: {
-            facingMode: "environment",
-          },
+          video: { facingMode: "environment" },
         });
-  
+
         videoElement = videoRef.current;
         if (videoElement) {
           videoElement.srcObject = mediaStream;
@@ -39,32 +38,37 @@ const ScanQR = () => {
         console.error("Camera error:", err);
       }
     };
-  
+
     startCamera();
-  
+
     return () => {
       if (videoElement && videoElement.srcObject) {
         const tracks = videoElement.srcObject.getTracks();
         tracks.forEach((track) => track.stop());
       }
-      scannerInstance = scannerRef.current;
-      if (scannerInstance) {
-        scannerInstance.stop();
+      if (scannerRef.current) {
+        scannerRef.current.stop();
       }
     };
   }, []);
-  
 
   const validateQRCode = async (qrData) => {
     try {
       const { studentId: scannedStudentId, courseId: scannedCourseId } = JSON.parse(qrData);
 
-      // Validate course ID matches the current courseId from route params
+      // Prevent duplicate scans
+      if (scannedSet.current.has(scannedStudentId)) {
+        console.log("Duplicate QR code scan ignored.");
+        return;
+      }
+      scannedSet.current.add(scannedStudentId);
+
+      // Validate course ID matches the current courseId
       if (scannedCourseId !== courseId) {
         throw new Error("This QR code does not match the current course.");
       }
 
-      // Query Firestore to find a student where "studentId" matches the scanned studentId
+      // Query Firestore to check if student exists
       const studentsRef = collection(db, "students");
       const studentQuery = query(studentsRef, where("studentId", "==", scannedStudentId));
       const querySnapshot = await getDocs(studentQuery);
@@ -77,7 +81,7 @@ const ScanQR = () => {
       const studentDoc = querySnapshot.docs[0];
       const studentData = studentDoc.data();
 
-      // Format timestamp as: December 15, 2024 at 8:53:23 PM UTC-5
+      // Format timestamp
       const now = new Date();
       const formattedTimestamp = new Intl.DateTimeFormat("en-US", {
         year: "numeric",
@@ -90,7 +94,7 @@ const ScanQR = () => {
         timeZoneName: "short",
       }).format(now);
 
-      // Mark attendance in attendanceSummaries
+      // Mark attendance
       await addDoc(collection(db, "attendanceSummaries"), {
         studentId: scannedStudentId,
         courseId,
@@ -100,13 +104,16 @@ const ScanQR = () => {
       });
 
       setSuccessMessage("Attendance marked successfully!");
+
+      // Reload page after 1 second
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
     } catch (err) {
       console.error("QR Code Validation Error:", err.message);
       setErrorMessage(err.message || "Failed to validate QR code.");
     }
   };
-
-
 
   const handleQRCodeScan = async () => {
     if (!videoRef.current) return;
@@ -117,7 +124,6 @@ const ScanQR = () => {
         videoElement,
         (result) => {
           validateQRCode(result.data);
-          scannerRef.current.stop();
         },
         {
           returnDetailedScanResult: true,
@@ -135,27 +141,27 @@ const ScanQR = () => {
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        // height: "100vh",
         padding: "1rem",
         position: "relative",
       }}
     >
+      {/* Header Section */}
       <Box
         sx={{
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
           marginBottom: "1.5rem",
-          gap: "20px"
+          gap: "20px",
         }}
       >
-        {/* Back Button */}
         <IconButton
           onClick={() =>
             navigate(`/course-dashboard/${courseId}`, {
               state: { courseName, semesterName, semesterId },
             })
-          } sx={{
+          }
+          sx={{
             backgroundColor: "#cccccc",
             "&:hover": {
               backgroundColor: "#b3b3b3",
@@ -165,12 +171,12 @@ const ScanQR = () => {
           <ArrowBackIcon />
         </IconButton>
 
-        {/* Header */}
         <Typography variant="h4">
           {courseName ? `Scan QR for ${courseName}` : "Scan QR"}
         </Typography>
       </Box>
 
+      {/* Camera View */}
       {error ? (
         <Typography color="error" variant="body1">
           {error}
@@ -189,7 +195,6 @@ const ScanQR = () => {
             border: "2px solid #673ab7",
           }}
         >
-          {/* Video Element */}
           <video
             ref={videoRef}
             autoPlay
