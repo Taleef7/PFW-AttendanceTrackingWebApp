@@ -18,7 +18,18 @@ const Register = () => {
   const [notificationMessage, setNotificationMessage] = useState('');
   const [notificationSeverity, setNotificationSeverity] = useState('success'); // success | error
 
+  const isValidPFWEmail = (email) => {
+    return email.endsWith("@pfw.edu");
+  };
+
   const handleRegister = async () => {
+    if (!isValidPFWEmail(email)) {
+      setNotificationMessage("Please use your @pfw.edu email to register.");
+      setNotificationSeverity("error");
+      setNotificationOpen(true);
+      return;
+    }
+
     if (password !== confirmPassword) {
       setError("Passwords do not match");
       setNotificationMessage("Passwords do not match.");
@@ -30,7 +41,7 @@ const Register = () => {
     setLoading(true);
     try {
       await signup(email, password);
-      setNotificationMessage("Registration successful! Please check your email to verify your account.");
+      setNotificationMessage("Registration successful! Please check your @pfw.edu email to verify your account.");
       setNotificationSeverity("success");
       setNotificationOpen(true);
 
@@ -72,6 +83,8 @@ const Register = () => {
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            error={!!error && !isValidPFWEmail(email)}
+            helperText={!isValidPFWEmail(email) ? "Please enter pfw email address." : ""}
           />
           <TextField
             variant="outlined"

@@ -42,6 +42,7 @@ const SemesterManagement = () => {
   const [notificationOpen, setNotificationOpen] = useState(false);
   const [notificationMessage, setNotificationMessage] = useState("");
   const [notificationSeverity, setNotificationSeverity] = useState("success"); // success | error | info | warning
+  const [nameError, setNameError] = useState("");
 
   const navigate = useNavigate();
 
@@ -78,6 +79,21 @@ const SemesterManagement = () => {
 
   const handleNotificationClose = () => {
     setNotificationOpen(false);
+  };
+
+  const validateSemesterName = (name) => {
+    const regex = /^[A-Za-z0-9 ]+$/;
+    return regex.test(name);
+  };
+
+  const handleNameChange = (e) => {
+    const { value } = e.target;
+    setNewSemester({ ...newSemester, name: value });
+    if (!validateSemesterName(value)) {
+      setNameError("Please enter a valid semester name. Example: Fall 2025");
+    } else {
+      setNameError("");
+    }
   };
 
   // Open modal for add or edit
@@ -120,6 +136,10 @@ const SemesterManagement = () => {
     e.preventDefault();
     setError("");
 
+    if (!validateSemesterName(newSemester.name)) {
+      setNameError("Please enter a valid semester name. Example: Fall 2025");
+      return;
+    }
     // Validation: Ensure end date is after start date
     if (new Date(newSemester.startDate) >= new Date(newSemester.endDate)) {
       setNotificationMessage("End date must be greater than start date.");
@@ -212,7 +232,10 @@ const SemesterManagement = () => {
       {loading ? (
         <Typography>Loading semesters...</Typography>
       ) : semesters.length > 0 ? (
-        <Box sx={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+        <Box
+          sx={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}
+          data-testid="semester-list"
+        >
           <Box
             sx={{
               display: "flex",
@@ -237,6 +260,7 @@ const SemesterManagement = () => {
                 padding: "0.5rem",
                 borderBottom: "1px solid #ddd",
               }}
+              data-testid="semester-item"
             >
               <Typography
                 sx={{ flex: 1, cursor: "pointer", color: "primary.main" }}
@@ -255,6 +279,7 @@ const SemesterManagement = () => {
                     e.stopPropagation();
                     openModal(semester);
                   }}
+                  data-testid="edit-semester"
                 >
                   <EditIcon />
                 </IconButton>
@@ -264,6 +289,7 @@ const SemesterManagement = () => {
                     e.stopPropagation();
                     handleRemoveSemester(semester.id);
                   }}
+                  data-testid="delete-semester"
                 >
                   <DeleteIcon />
                 </IconButton>
@@ -272,7 +298,7 @@ const SemesterManagement = () => {
           ))}
         </Box>
       ) : (
-        <Typography>No semesters found. Please add a semester.</Typography>
+        <Typography data-testid="no-semesters-message">No semesters found. Please add a semester.</Typography>
       )}
 
       <Button
@@ -313,11 +339,13 @@ const SemesterManagement = () => {
           <form onSubmit={handleSaveSemester}>
             <TextField
               fullWidth
+              id="semester-name"
               label="Semester Name"
+              data-testid="semester-name"
               value={newSemester.name}
-              onChange={(e) =>
-                setNewSemester({ ...newSemester, name: e.target.value })
-              }
+              onChange={handleNameChange}
+              error={!!nameError}
+              helperText={nameError}
               sx={{ marginBottom: "1rem" }}
               required
             />
@@ -325,6 +353,8 @@ const SemesterManagement = () => {
               fullWidth
               type="date"
               label="Start Date"
+              id="start-date"
+              data-testid="start-date"
               InputLabelProps={{ shrink: true }}
               value={newSemester.startDate}
               onChange={(e) =>
@@ -336,6 +366,8 @@ const SemesterManagement = () => {
             <TextField
               fullWidth
               type="date"
+              id="end-date"
+              data-testid="end-date"
               label="End Date"
               InputLabelProps={{ shrink: true }}
               value={newSemester.endDate}
@@ -349,7 +381,12 @@ const SemesterManagement = () => {
               <Button variant="outlined" onClick={closeModal}>
                 Cancel
               </Button>
-              <Button type="submit" variant="contained">
+              <Button
+                type="submit"
+                variant="contained"
+                id="semester-submit"
+                data-testid="semester-submit"
+              >
                 {editingSemester ? "Update Semester" : "Add Semester"}
               </Button>
             </Box>
@@ -357,7 +394,6 @@ const SemesterManagement = () => {
         </Box>
       </Modal>
 
-      {/* Notification Snackbar */}
       <Snackbar
         open={notificationOpen}
         autoHideDuration={3000}
@@ -368,11 +404,13 @@ const SemesterManagement = () => {
           onClose={handleNotificationClose}
           severity={notificationSeverity}
           sx={{ width: "100%" }}
-        >
+          data-testid="semester-notification"
+          >
           {notificationMessage}
         </Alert>
       </Snackbar>
     </Box>
+
   );
 };
 

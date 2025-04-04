@@ -33,6 +33,10 @@ const StudentList = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState(null);
 
+  const [firstNameError, setFirstNameError] = useState("");
+  const [lastNameError, setLastNameError] = useState("");
+  const [emailError, setEmailError] = useState("");
+
   // Notification state
   const [notificationOpen, setNotificationOpen] = useState(false);
   const [notificationMessage, setNotificationMessage] = useState("");
@@ -80,6 +84,9 @@ const StudentList = () => {
   const openEditModal = (student) => {
     setSelectedStudent(student);
     setIsEditModalOpen(true);
+    setFirstNameError("");
+    setLastNameError("");
+    setEmailError("");
   };
 
   const closeEditModal = () => {
@@ -91,8 +98,53 @@ const StudentList = () => {
     setNotificationOpen(false);
   };
 
+  const validateFields = () => {
+    let valid = true;
+
+    // First Name Validation
+    if (!selectedStudent.firstName) {
+      setFirstNameError("First name is required.");
+      valid = false;
+    } else if (!/^[A-Za-z]+$/.test(selectedStudent.firstName)) {
+      setFirstNameError("First name can only contain letters.");
+      valid = false;
+    } else if (selectedStudent.firstName.length > 50) {
+      setFirstNameError("First name should not exceed 50 characters.");
+      valid = false;
+    } else {
+      setFirstNameError("");
+    }
+
+    // Last Name Validation
+    if (!selectedStudent.lastName) {
+      setLastNameError("Last name is required.");
+      valid = false;
+    } else if (!/^[A-Za-z]+$/.test(selectedStudent.lastName)) {
+      setLastNameError("Last name can only contain letters.");
+      valid = false;
+    } else if (selectedStudent.lastName.length > 50) {
+      setLastNameError("Last name should not exceed 50 characters.");
+      valid = false;
+    } else {
+      setLastNameError("");
+    }
+
+    // Email Validation
+    if (!selectedStudent.email) {
+      setEmailError("Email is required.");
+      valid = false;
+    } else if (!/^[A-Za-z0-9._%+-]+@pfw\.edu$/.test(selectedStudent.email)) {
+      setEmailError("Email must end with @pfw.edu");
+      valid = false;
+    } else {
+      setEmailError("");
+    }
+
+    return valid;
+  };
+
   const handleUpdateStudent = async () => {
-    if (!selectedStudent) return;
+    if (!validateFields()) return;
 
     try {
       const studentRef = doc(collection(db, "students"), selectedStudent.id);
@@ -251,6 +303,8 @@ const StudentList = () => {
                 onChange={(e) =>
                   setSelectedStudent((prev) => ({ ...prev, firstName: e.target.value }))
                 }
+                error={!!firstNameError}
+                helperText={firstNameError}
               />
               <TextField
                 fullWidth
@@ -261,6 +315,8 @@ const StudentList = () => {
                 onChange={(e) =>
                   setSelectedStudent((prev) => ({ ...prev, lastName: e.target.value }))
                 }
+                error={!!lastNameError}
+                helperText={lastNameError}
               />
               <TextField
                 fullWidth
@@ -272,6 +328,8 @@ const StudentList = () => {
                 onChange={(e) =>
                   setSelectedStudent((prev) => ({ ...prev, email: e.target.value }))
                 }
+                error={!!emailError}
+                helperText={emailError}
               />
               <Button
                 variant="contained"

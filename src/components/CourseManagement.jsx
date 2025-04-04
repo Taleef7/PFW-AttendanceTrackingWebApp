@@ -56,6 +56,31 @@ const CourseManagementPage = () => {
 
   const navigate = useNavigate();
 
+  const handleCourseNameChange = (event) => {
+    const value = event.target.value;
+    setCourseForm({ ...courseForm, name: value });
+
+    // Validation check for alphabets only
+    const regex = /^[a-zA-Z\s]*$/;
+    if (!regex.test(value)) {
+      setError("Please enter a valid course name (alphabets only).");
+    } else {
+      setError("");
+    }
+  };
+
+  const handleCourseIdChange = (event) => {
+    const value = event.target.value;
+    setCourseForm({ ...courseForm, ID: value });
+
+    const regexForCourseId = /^[A-Za-z0-9-]{1,20}$/;
+    if (!regexForCourseId.test(value)) {
+      setError("Course ID must be 1-20 characters and can only contain letters, numbers, and hyphens.");
+      return false;
+    }
+    setError("");
+  };
+
   const fetchCourses = useCallback(async () => {
     try {
       const coursesQuery = query(
@@ -83,6 +108,20 @@ const CourseManagementPage = () => {
       setError("Course Name and ID cannot be empty.");
       return false;
     }
+
+    // Additional validation for course name (alphabets only)
+    const regex = /^[a-zA-Z\s]*$/;
+    if (!regex.test(course.name)) {
+      setError("Please enter a valid course name (alphabets only).");
+      return false;
+    }
+
+    const regexForCourseId = /^[A-Za-z0-9-]{1,20}$/;
+    if (!regexForCourseId.test(course.ID)) {
+      setError("Course ID must be 1-20 characters and can only contain letters, numbers, and hyphens.");
+      return false;
+    }
+
     setError("");
     return true;
   };
@@ -232,6 +271,7 @@ const CourseManagementPage = () => {
               backgroundColor: "#1565c0",
             },
           }}
+          data-testid="add-course-button"
         >
           <AddIcon />
         </IconButton>
@@ -281,6 +321,7 @@ const CourseManagementPage = () => {
                       handleShowForm(course);
                     }}
                     sx={{ marginRight: 1 }}
+                    data-testid="EditIcon"
                   >
                     <EditIcon />
                   </IconButton>
@@ -357,6 +398,7 @@ const CourseManagementPage = () => {
             borderRadius: "8px",
             boxShadow: 24,
           }}
+          data-testid="course-form"
         >
           <Typography variant="h6" gutterBottom>
             {courseToEdit ? "Edit Course" : "Add Course"}
@@ -372,26 +414,26 @@ const CourseManagementPage = () => {
             fullWidth
             label="Course ID"
             value={courseForm.ID}
-            onChange={(e) =>
-              setCourseForm({ ...courseForm, ID: e.target.value })
-            }
+            onChange={handleCourseIdChange}
             sx={{ marginBottom: "1rem" }}
+            data-testid="course-id-input"
+            error={!!error}
           />
-          <TextField
+           <TextField
             fullWidth
             label="Course Name"
             value={courseForm.name}
-            onChange={(e) =>
-              setCourseForm({ ...courseForm, name: e.target.value })
-            }
-            sx={{ marginBottom: "1rem" }}
+            onChange={handleCourseNameChange}
+            data-testid="course-name-input"
+            error={!!error}
           />
           <Button
             variant="contained"
             color="primary"
             fullWidth
             onClick={handleAddOrUpdateCourse}
-            sx={{ marginBottom: "1rem" }}
+            sx={{ marginBottom: "1rem" , marginTop: "1rem"}}
+            data-testid="course-button"
           >
             {courseToEdit ? "Update Course" : "Add Course"}
           </Button>
@@ -400,6 +442,7 @@ const CourseManagementPage = () => {
             color="secondary"
             fullWidth
             onClick={handleCloseForm}
+            data-testid="cancel-button"
           >
             Cancel
           </Button>
@@ -417,6 +460,7 @@ const CourseManagementPage = () => {
           onClose={handleNotificationClose}
           severity={notificationSeverity}
           sx={{ width: "100%" }}
+          data-testid="notification"
         >
           {notificationMessage}
         </Alert>

@@ -11,6 +11,7 @@
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
+    "axios": "^0.27.2",
     "dotenv": "^16.4.7",
     "emailjs-com": "^3.2.0",
     "firebase": "^11.0.1",
@@ -25,7 +26,6 @@
     "react-chartjs-2": "^5.2.0",
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.28.0",
-    "react-scripts": "5.0.1",
     "react-webcam": "^7.2.0",
     "recharts": "^2.13.3",
     "web-vitals": "^2.1.4",
@@ -35,7 +35,9 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "app": "nodemon server.js"
+    "app": "nodemon server.js",
+    "cy:open": "cypress open",
+    "cy:run": "cypress run"
   },
   "eslintConfig": {
     "extends": [
@@ -57,6 +59,11 @@
   },
   "devDependencies": {
     "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
-    "nodemon": "^3.1.7"
+    "@firebase/rules-unit-testing": "^4.0.1",
+    "cypress": "^14.0.1",
+    "firebase-functions-test": "^3.4.0",
+    "jest": "^29.7.0",
+    "nodemon": "^3.1.7",
+    "react-scripts": "^5.0.1"
   }
 }

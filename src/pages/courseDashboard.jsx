@@ -55,6 +55,8 @@ const CourseDashboard = () => {
   const [notificationMessage, setNotificationMessage] = useState("");
   const [notificationSeverity, setNotificationSeverity] = useState("success");
   const navigate = useNavigate();
+  const firstNameRegex = /^[a-zA-Z-' ]{1,50}$/;
+  const lastNameRegex = /^[a-zA-Z-' ]{1,50}$/;
 
   useEffect(() => {
     const fetchCourseData = async () => {
@@ -86,9 +88,9 @@ const CourseDashboard = () => {
       };
       setCourseData(fetchedData);
     };
-
+    console.log("rendering course dashboard");
     fetchCourseData();
-  });
+  }, []);
 
   const closeAddStudentModal = () => {
     setIsAddStudentOpen(false);
@@ -105,6 +107,28 @@ const CourseDashboard = () => {
 
     if (!firstName || !lastName || !studentId || !email) {
       setNotificationMessage("Please fill in all fields.");
+      setNotificationSeverity("error");
+      setNotificationOpen(true);
+      return;
+    }
+
+    if (!firstNameRegex.test(firstName)) {
+      setNotificationMessage("First Name can only contain letters, hyphens, apostrophes, and must be under 50 characters.");
+      setNotificationSeverity("error");
+      setNotificationOpen(true);
+      return;
+    }
+
+    if (!lastNameRegex.test(lastName)) {
+      setNotificationMessage("Last Name can only contain letters, hyphens, apostrophes, and must be under 50 characters.");
+      setNotificationSeverity("error");
+      setNotificationOpen(true);
+      return;
+    }
+    
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@(pfw\.edu|gmail\.com)$/;
+    if (!emailRegex.test(email)) {
+      setNotificationMessage("Please enter a valid email address with @pfw.edu or @gmail.com.");
       setNotificationSeverity("error");
       setNotificationOpen(true);
       return;
