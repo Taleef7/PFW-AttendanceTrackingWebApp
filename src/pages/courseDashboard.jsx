@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   Box,
   Typography,
@@ -58,6 +58,30 @@ const CourseDashboard = () => {
   const firstNameRegex = /^[a-zA-Z-' ]{1,50}$/;
   const lastNameRegex = /^[a-zA-Z-' ]{1,50}$/;
 
+  const handleQrCodeSent = useCallback(async () => {
+    setNotificationOpen(false);
+    setNotificationMessage("");
+    setNotificationSeverity("info");
+    console.log("Triggering QR Code API for courseId:", courseId);
+
+    try {
+      setNotificationMessage("Sending QR codes, please wait...");
+      setNotificationSeverity("info");
+      setNotificationOpen(true);
+
+      const result = await sendQRCodesToStudents(courseId);
+      console.log("API call success:", result);
+      setNotificationMessage(`Success: ${result.message}`);
+      setNotificationSeverity("success");
+    } catch (error) {
+      console.error("Error in handleQrCodeSent:", error);
+      setNotificationMessage("Failed to send QR codes. Please try again.");
+      setNotificationSeverity("error");
+    } finally {
+      setNotificationOpen(true);
+    }
+  }, [courseId]);
+
   useEffect(() => {
     const fetchCourseData = async () => {
       const fetchedData = {
@@ -90,7 +114,7 @@ const CourseDashboard = () => {
     };
     console.log("rendering course dashboard");
     fetchCourseData();
-  }, []);
+  }, [courseId, courseName, handleQrCodeSent, semesterId, semesterName]);
 
   const closeAddStudentModal = () => {
     setIsAddStudentOpen(false);
@@ -242,33 +266,6 @@ const CourseDashboard = () => {
   const handleFileChange = (event) => {
     setImportFile(event.target.files[0]);
   };
-
-
-  const handleQrCodeSent = async () => {
-    setNotificationOpen(false);
-    setNotificationMessage("");
-    setNotificationSeverity("info");
-    console.log("Triggering QR Code API for courseId:", courseId); // Debugging line
-
-    try {
-      setNotificationMessage("Sending QR codes, please wait...");
-      setNotificationSeverity("info");
-      setNotificationOpen(true);
-
-      const result = await sendQRCodesToStudents(courseId);
-      console.log("API call success:", result); // Debugging line
-      setNotificationMessage(`Success: ${result.message}`);
-      setNotificationSeverity("success");
-    } catch (error) {
-      console.error("Error in handleQrCodeSent:", error); // Debugging line
-      setNotificationMessage("Failed to send QR codes. Please try again.");
-      setNotificationSeverity("error");
-    } finally {
-      setNotificationOpen(true);
-    }
-  };
-
-
 
   const handleActionClick = (path, state = {}) => {
     navigate(path, { state });
